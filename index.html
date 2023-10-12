@@ -1,0 +1,60 @@
+---
+layout: page
+width: expand
+---
+
+<div class="container">
+    <div class="row">
+        <div class="col-2"></div>
+        <div class="col">
+
+            <h1>Administration</h1>  
+            <form>
+                <div class="mb-3">
+                <label for="apiKey" class="form-label">API Key</label>
+                <input type="email" class="form-control" id="apiKey" aria-describedby="apiKey" value="wBFdWN3iL12Ro1CB7jPBk7UPPxw98TYa7JBl0ALu">
+                </div>
+            </form>
+
+            <h2>Engine Capabilities</h2>
+            <p>This executes the common functionality of the search engine.</p>
+            <ul>
+                <script>
+                    function pullAPIsJSON(){
+                        const options = {
+                            method: 'PUT',
+                            headers: {
+                                "Accept": "application/json",
+                                "X-API-KEY": 'Bearer ' + document.getElementById("apiKey").value
+                            }
+                        };  
+
+                        fetch('https://8wmp1s1pni.execute-api.us-east-1.amazonaws.com/staging/engine/apisjson',options)
+                            .then(function(response) {
+                                if (!response.ok) {
+                                    console.log('Error with Status Code: ' + response.status);                                
+                                }
+                                response.json().then(function(data) {   
+
+                                    console.log(data);
+
+                                });
+                                })
+                                .catch(function(err) {
+                                    console.log('Error: ' + err);
+                            });
+
+                        }
+                </script>
+                <li><a href="#" onclick="pullAPIsJSON(); return false;">Pull APIs.json</a> - <span id="pull-apisjson-message">This pulls any APIs.json that haven't been pulled this week.</span></li>
+                <script>
+                    function pullAPIsProperties(){
+                        
+                    }
+                </script>            
+                <li><a href="pullAPIsProperties(); return false;">Pull APIs Properties</a> - <span id="pull-apis-properties-message">This pulls any APIs.json that haven't been pulled this week.</span></li>
+            </ul>
+        </div>
+        <div class="col-2"></div>
+    </div>
+</div>
