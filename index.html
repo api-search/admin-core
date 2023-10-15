@@ -9,16 +9,28 @@ width: expand
         <div class="col">
 
             <h1>Administration</h1>  
+            <p>We want to be able to deliver a simple, but powerful solution to API discovery using the APIs.json specification. This is the story and the controls to deliver this solution in an ongoing way using the APIs.io API search engine.</p>
+            <h2>API Key</h2>
+            <p>This narrative uses the APIs.io API to enable the functionality described on this page, so you will need an API key to utilize any of the actions provided in this narrative.</p>
             <form>
                 <div class="mb-3">
-                <label for="apiKey" class="form-label">API Key</label>
                 <input type="email" class="form-control" id="apiKey" aria-describedby="apiKey" value="">
                 </div>
             </form>
 
             <h2>Engine Capabilities</h2>
-            <p>This executes the common functionality of the search engine.</p>
-            <ul>
+            <p>To deliver the engine behind the APIs.io search engine we need a handful of capabilities allowing the submission and processing of APIs.json files.</p>
+            <table width="100%">
+                <tr>
+                    <td align="right">&#8594;</td>
+                    <td>
+                        <a href="https://apis-io-site.apievangelist.com/add/" target="_blank">Submit APIs.json</a>
+                    </td>
+                    <td>
+                        <p>APIs.json files can be submitted via the form on the APIs.io website. This will submit the URL for an APIs.json into the queue for processing, which can be pulled below.</p>
+                    </td>
+                    <td id="submit-apisjson-message"></td>
+                </tr>                
                 <script>
                     function pullAPIsJSON(){
 
@@ -50,7 +62,30 @@ width: expand
 
                         }
                 </script>
-                <li><a href="#" onclick="pullAPIsJSON(); return false;">Pull APIs.json</a> - <span id="pull-apisjson-message">This pulls any APIs.json that haven't been pulled this week.</span></li>
+                <tr>
+                    <td align="right">&#8594;</td>
+                    <td>
+                        <a href="#" onclick="pullAPIsJSON(); return false;">Pull APIs.json</a>
+                    </td>
+                    <td>
+                        <p>This pulls any APIs.json that haven't been pulled this week, processing the following details of the APIs.json being pulled.</p>
+                        <ul>
+                            <li>Pulls the APIs.json using the URL provided on submission</li>
+                            <li>Validates the APIs.json as valid 0.14, 0.15, or 0.16</li>
+                            <li>Produces a slug using the name domain of the URL</li>
+                            <li>Inserts URL, slug, name, description, image, and tags in database</li>
+                            <li>Processes any APIs that are available in the apis.json</li>
+                            <li>Processes any properties for the API listed</li>
+                            <li>Process any common properties for the APIs.json</li>
+                            <li>Process any maintainers for the APIs.json</li>
+                            <li>Insert APIs into database</li>
+                            <li>Insert API properties into database</li>
+                            <li>Insert common properties into database</li>
+                            <li>Insert maintainers into database</li>                 
+                        </ul>
+                    </td>
+                    <td id="pull-apisjson-message"></td>
+                </tr>
                 <script>
                     function pullAPIsProperties(){
 
@@ -82,8 +117,37 @@ width: expand
 
                         }
                 </script>            
-                <li><a href="#" onclick="pullAPIsProperties(); return false;">Pull APIs Properties</a> - <span id="pull-apis-properties-message">This pulls any APIs properties that haven't been pulled this week.</span></li>
-            </ul>
+                <tr>
+                    <td align="right">&#8594;</td>
+                    <td>
+                        <a href="#" onclick="pullAPIsProperties(); return false;">Pull APIs Properties</a>
+                    </td>
+                    <td>
+                        This pulls any APIs properties that haven't been pulled this week.
+                    </td>
+                    <td id="pull-apis-properties-message"></td>
+                </tr> 
+                <tr>
+                    <td align="right">&#8594;</td>
+                    <td>
+                        <a href="apis-json-overlay/" target="_blank">APIs.json Overlay</a>
+                    </td>
+                    <td>
+                        <p>This is where we apply an overlay to all of the APIs.json submitted, providing an opportunity to edit the name, slug, description, and image for the overall APIs.json. Right now only the slug is critical to the publishing of consistent APis, but eventually we'll need the rest of the information standardized.</p>
+                    </td>
+                    <td id="apisjson-overlay-message"></td>
+                </tr>   
+                <tr>
+                    <td align="right">&#8594;</td>
+                    <td>
+                        <a href="apis-json-apis-overlay/" target="_blank">APIs.json APIs Overlay</a>
+                    </td>
+                    <td>
+                        <p>This is where we apply an overlay to all of the APIs indexed within the APIs.json files that are submitted, providing an opportunity to edit the name, slug, description, and image for each individual API. This is needed to provide a consistent set of information for publishing to the web site and making available for searching and browsing.</p>
+                    </td>
+                    <td id="apisjson-overlay-message"></td>
+                </tr>                                             
+            </table>
 
             <h2>Ratings Capabilities</h2>
             <p>This executes the common functions of the ratings engine.</p>
