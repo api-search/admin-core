@@ -8,7 +8,7 @@ width: expand
         <div class="col-2"></div>
         <div class="col">
 
-            <h1>APIs.json API Overlay</h1>  
+            <h1>APIs Overlay</h1>  
             <p>Need Text</p>
             <h2>API Key</h2>
             <p>This narrative uses the APIs.io API to enable the functionality described on this page, so you will need an API key to utilize any of the actions provided in this narrative.</p>
@@ -19,8 +19,115 @@ width: expand
             </form>
 
             <h2>All APIs</h2>
-            <p>Need Text</p>
-            
+            <p>These are all of the APIs available in the APIs.io index, sorted alphabetically by name. This gives us the opportunity to standardize the name, slug, description, and image for each API.</p>
+            <table id="all-apisjson"></table>
+            <script>
+
+                function updateAPIsJSONOverlay(row){
+
+                //document.getElementById("pull-apis-properties-message").innerHTML = "Pulling..."
+
+                let overlay = {};
+                overlay.humanURL = document.getElementById("humanURL-" + row).value;
+                overlay.name = document.getElementById("name2-" + row).value;
+                overlay.slug = document.getElementById("slug2-" + row).value;
+                overlay.description = document.getElementById("description2-" + row).value;
+                overlay.image = document.getElementById("image2-" + row).value;              
+
+                const options = {
+                    method: 'PUT',
+                    headers: {
+                        "Accept": "application/json",
+                        "X-API-KEY": document.getElementById("apiKey").value
+                    },
+                    body: JSON.stringify(overlay)
+                };  
+
+                fetch('https://8wmp1s1pni.execute-api.us-east-1.amazonaws.com/staging/engine/apisjson/apis/overlay',options)
+                    .then(function(response) {
+                        if (!response.ok) {
+                            console.log('Error with Status Code: ' + response.status);                                
+                        }
+                        response.json().then(function(data) {   
+
+                            console.log(data);
+
+                            document.getElementById("message-" + row).innerHTML = data.message;
+
+                        });
+                        })
+                        .catch(function(err) {
+                            console.log('Error: ' + err);
+                    });
+
+                }
+
+                function listAPIsJSON(){
+
+                    //document.getElementById("pull-apis-properties-message").innerHTML = "Pulling..."
+
+                    const options = {
+                        method: 'GET',
+                        headers: {
+                            "Accept": "application/json",
+                            "X-API-KEY": document.getElementById("apiKey").value
+                        }
+                    };  
+
+                    fetch('https://8wmp1s1pni.execute-api.us-east-1.amazonaws.com/staging/engine/apisjson/apis/overlay',options)
+                        .then(function(response) {
+                            if (!response.ok) {
+                                console.log('Error with Status Code: ' + response.status);                                
+                            }
+                            response.json().then(function(data) {   
+
+                                console.log(data);
+
+                                let html = '<hr>';
+                                for (let i = 0; i < data.length; i++) {
+
+                                    html += '<input style="display: none;" type="text" class="form-control" id="humanURL-' + i + '" value="' + data[i].humanURL + '">';
+
+                                    html += '<div class="mb-3">';
+                                    html += '<label for="name" class="form-label">Name</label>';
+                                    html += '<input style="" type="text" class="form-control" id="name-' + i + '" value="' + data[i].name + '">';
+                                    html += '<input style="border-color:#50C878;" type="text" class="form-control" id="name2-' + i + '" value="' + data[i].name2 + '">';
+                                    html += '</div>';
+
+                                    html += '<div class="mb-3">';
+                                    html += '<label for="name" class="form-label">Slug</label>';
+                                    html += '<input style="" type="text" class="form-control" id="slug-' + i + '" value="' + data[i].slug + '">';
+                                    html += '<input style="border-color:#50C878;" type="text" class="form-control" id="slug2-' + i + '" value="' + data[i].slug2 + '">';
+                                    html += '</div>';
+                                    
+                                    html += '<div class="mb-3">';
+                                    html += '<label for="name" class="form-label">Description</label>';
+                                    html += '<textarea class="form-control" id="description-' + i + '" style="height: 175px;">' + data[i].description + '</textarea>';
+                                    html += '<textarea class="form-control" id="description2-' + i + '" style="height: 175px; border-color:#50C878;">' + data[i].description2 + '</textarea>';
+                                    html += '</div>';  
+                                    
+                                    html += '<div class="mb-3">';
+                                    html += '<label for="name" class="form-label">Image</label>';
+                                    html += '<input style="" type="text" class="form-control" id="image-' + i + '" value="' + data[i].image + '">';
+                                    html += '<input style="border-color:#50C878;" type="text" class="form-control" id="image2-' + i + '" value="' + data[i].image2 + '">';
+                                    html += '</div>';   
+                                    
+                                    html += '<button type="button" class="btn btn-primary" onclick="updateAPIsJSONOverlay(' + i + '); return false;">Update Overlay</button>';
+                                    html += '<div style="color:#FF0000; padding: 15px; text-align: center;" id="message-' + i + '"></div>';
+                                    html += '<br><br><hr><br>';
+                                }   
+                                document.getElementById("all-apisjson").innerHTML = html;                       
+
+                            });
+                            })
+                            .catch(function(err) {
+                                console.log('Error: ' + err);
+                        });
+
+                    }
+
+                    listAPIsJSON();
+            </script>              
 
         </div>
         <div class="col-2"></div>
