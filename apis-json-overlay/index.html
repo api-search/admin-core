@@ -20,6 +20,7 @@ width: expand
 
             <h2>All APIs.json</h2>
             <p>These are all of the APIs.json available in the APIs.io index, sorted alphabetically by name. This gives us the opportunity to standardize the name, slug, description, and image for each index. Right now all we really care about is the slug, since we aren't actually publishing the APIs.json indexes anywhere, but eventually we will.</p>
+            <center><button type="button" class="btn btn-primary" onclick="listAPIsJSON(); return false;">Display Overlay</button></center>
             <table id="all-apisjson"></table>
             <script>
 
@@ -124,9 +125,7 @@ width: expand
                                 console.log('Error: ' + err);
                         });
 
-                    }
-
-                    listAPIsJSON();
+                    }                    
             </script>              
 
         </div>
