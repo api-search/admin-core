@@ -216,7 +216,44 @@ width: expand
                         }
                 </script>            
                 <li><a href="#" onclick="rateAPIsProperties(); return false;">Rate APIs Properties</a> - <span id="ratings-apis-properties-message">This rates any API properties that haven't been rated this week.</span></li>
-            </ul>            
+            </ul>      
+            
+            <h2>Publishing Capabilities</h2>
+            <p>This executes the common functions of the publishing engine.</p>
+            <ul>
+                <script>
+                    function publishAPIs(){
+
+                        document.getElementById("publishing-apis-message").innerHTML = "Publishing..."
+
+                        const options = {
+                            method: 'PUT',
+                            headers: {
+                                "Accept": "application/json",
+                                "X-API-KEY": document.getElementById("apiKey").value
+                            }
+                        };  
+
+                        fetch('https://zygznnor01.execute-api.us-east-1.amazonaws.com/staging/publish/apis',options)
+                            .then(function(response) {
+                                if (!response.ok) {
+                                    console.log('Error with Status Code: ' + response.status);                                
+                                }
+                                response.json().then(function(data) {   
+
+                                    //console.log(data);
+                                    document.getElementById("publishing-apisjson-message").innerHTML = data.message;
+
+                                });
+                                })
+                                .catch(function(err) {
+                                    console.log('Error: ' + err);
+                            });
+
+                        }
+                </script>
+                <li><a href="#" onclick="publishAPIs(); return false;">Publish APIs</a> - <span id="publishing-apis-message">This publishes any APIs that haven't been published this week.</span></li>
+            </ul>              
 
         </div>
         <div class="col-2"></div>
