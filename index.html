@@ -14,7 +14,28 @@ width: expand
             <p>This narrative uses the APIs.io API to enable the functionality described on this page, so you will need an API key to utilize any of the actions provided in this narrative.</p>
             <form>
                 <div class="mb-3">
-                <input type="email" class="form-control" id="apiKey" aria-describedby="apiKey" value="">
+                <script>
+                    function setAPIKey(){
+                        var token = document.getElementById('token').value;
+                        Cookies.set('token',token);
+                    }
+
+                    function changeToken(t){
+                        Cookies.set('token',t)
+                    }	                    
+                            
+                    var token = getUrlVar('token');	
+                    if(token){
+                        document.getElementById('token').value = token;		
+                        changeToken(token);
+                    }						
+
+                    var stored_token = Cookies.get('token');
+                    if(stored_token){
+                        document.getElementById('token').value = stored_token;	
+                    }                      
+                </script>
+                <input type="text" class="form-control" id="apiKey" aria-describedby="token" value="" onchange="setAPIKey();">
                 </div>
             </form>
 
