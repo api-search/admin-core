@@ -144,7 +144,7 @@ width: expand
                         <a href="#" onclick="pullAPIsProperties(); return false;">Pull APIs Properties</a>
                     </td>
                     <td>
-                        This pulls any APIs properties that haven't been pulled this week.
+                        This pulls any APIs properties that haven't been pulled this week, check and records the HTTP status code for the property, which will be added to score later.
                     </td>
                     <td id="pull-apis-properties-message"></td>
                 </tr> 
@@ -204,7 +204,7 @@ width: expand
 
                         }
                 </script>
-                <li><a href="#" onclick="rateAPIsJSON(); return false;">Rate APIs.json</a> - <span id="ratings-apisjson-message">This rates any APIs.json that haven't been rated this week.</span></li>
+                <li><a href="#" onclick="rateAPIsJSON(); return false;">Rate APIs.json</a> - <span id="ratings-apisjson-message">This rates any APIs.json that haven't been rated this week, applying all of the <a href="https://apis-io-site.apievangelist.com/rules/">Spectral rules</a> to each APIs.json, evaluating what properties each API possesses.</span></li>
                 <script>
                     function rateAPIsProperties(){
 
@@ -236,7 +236,7 @@ width: expand
 
                         }
                 </script>            
-                <li><a href="#" onclick="rateAPIsProperties(); return false;">Rate APIs Properties</a> - <span id="ratings-apis-properties-message">This rates any API properties that haven't been rated this week.</span></li>
+                <li><a href="#" onclick="rateAPIsProperties(); return false;">Rate APIs Properties</a> - <span id="ratings-apis-properties-message">This rates any API properties that haven't been rated this week, applying points if it has a 200 status code, and not applying points for any property that 404s.</span></li>
                 <script>
                     function scoreAPIsJSON(){
 
@@ -268,11 +268,11 @@ width: expand
 
                         }
                 </script>            
-                <li><a href="#" onclick="scoreAPIsJSON(); return false;">Score APIs</a> - <span id="score-apis-json-message">This applies a score to any APIs.json that haven't been scored this week.</span></li>                
+                <li><a href="#" onclick="scoreAPIsJSON(); return false;">Score APIs</a> - <span id="score-apis-json-message">This applies a score to any APIs.json that haven't been scored this week, taking the sum of the Spectral rules run and the 200 OK properties and applies to to each APIs.json that is indexed..</span></li>                
             </ul>      
             
             <h2>Publishing Capabilities</h2>
-            <p>This executes the common functions of the publishing engine.</p>
+            <p>This executes the common functions of the publishing engine. pushing a static representation of the web site to GitHub pages, providing an SEO layer for the website.</p>
             <ul>
                 <script>
                     function publishAPIs(){
@@ -305,7 +305,7 @@ width: expand
 
                         }
                 </script>
-                <li><a href="#" onclick="publishAPIs(); return false;">Publish APIs</a> - <span id="publishing-apis-message">This publishes any APIs that haven't been published this week.</span></li>
+                <li><a href="#" onclick="publishAPIs(); return false;">Publish APIs</a> - <span id="publishing-apis-message">This publishes any APIs to GitHub that haven't been published this week, ensuring there is a YAML file and resulting HTML static page which can be browsed and accessed via the API search.</span></li>
             </ul>              
 
         </div>
