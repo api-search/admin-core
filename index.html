@@ -30,7 +30,7 @@ width: expand
                         changeToken(token);
                     }						
 
-                    if(Cookies){
+                    if(Cookies === "object"){
                         var stored_token = Cookies.get('token');
                         if(stored_token){
                             document.getElementById('token').value = stored_token;	
@@ -82,7 +82,8 @@ width: expand
                                 .catch(function(err) {
                                     console.log('Error: ' + err);
                                     if(err == 'TypeError: Failed to fetch'){
-                                        document.getElementById("score-apis-json-message").innerHTML = 'You need an API key.';
+                                        console.log("IN");
+                                        document.getElementById("pull-apisjson-message").innerHTML = 'You need an API key.';
                                     }                                    
                             });
 
@@ -140,7 +141,7 @@ width: expand
                                 .catch(function(err) {
                                     console.log('Error: ' + err);
                                     if(err == 'TypeError: Failed to fetch'){
-                                        document.getElementById("score-apis-json-message").innerHTML = 'You need an API key.';
+                                        document.getElementById("pull-apis-properties-message").innerHTML = 'You need an API key.';
                                     }                                    
                             });
 
@@ -209,7 +210,7 @@ width: expand
                                 .catch(function(err) {
                                     console.log('Error: ' + err);
                                     if(err == 'TypeError: Failed to fetch'){
-                                        document.getElementById("score-apis-json-message").innerHTML = 'You need an API key.';
+                                        document.getElementById("ratings-apisjson-message").innerHTML = 'You need an API key.';
                                     }                                    
                             });
 
@@ -319,7 +320,7 @@ width: expand
                                 .catch(function(err) {
                                     console.log('Error: ' + err);
                                     if(err == 'TypeError: Failed to fetch'){
-                                        document.getElementById("score-apis-json-message").innerHTML = 'You need an API key.';
+                                        document.getElementById("publishing-apis-message").innerHTML = 'You need an API key.';
                                     }                                    
                             });
 
