@@ -30,7 +30,7 @@ width: expand
                         changeToken(token);
                     }						
 
-                    if(Cookies.get('token')){
+                    if(Cookies){
                         var stored_token = Cookies.get('token');
                         if(stored_token){
                             document.getElementById('token').value = stored_token;	
