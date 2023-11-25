@@ -30,10 +30,12 @@ width: expand
                         changeToken(token);
                     }						
 
-                    var stored_token = Cookies.get('token');
-                    if(stored_token){
-                        document.getElementById('token').value = stored_token;	
-                    }                      
+                    if(Cookies.get('token')){
+                        var stored_token = Cookies.get('token');
+                        if(stored_token){
+                            document.getElementById('token').value = stored_token;	
+                        }     
+                    }                 
                 </script>
                 <input type="text" class="form-control" id="apiKey" aria-describedby="token" value="" onchange="setAPIKey();">
                 </div>
@@ -79,6 +81,9 @@ width: expand
                                 })
                                 .catch(function(err) {
                                     console.log('Error: ' + err);
+                                    if(err == 'TypeError: Failed to fetch'){
+                                        document.getElementById("score-apis-json-message").innerHTML = 'You need an API key.';
+                                    }                                    
                             });
 
                         }
@@ -134,6 +139,9 @@ width: expand
                                 })
                                 .catch(function(err) {
                                     console.log('Error: ' + err);
+                                    if(err == 'TypeError: Failed to fetch'){
+                                        document.getElementById("score-apis-json-message").innerHTML = 'You need an API key.';
+                                    }                                    
                             });
 
                         }
@@ -200,6 +208,9 @@ width: expand
                                 })
                                 .catch(function(err) {
                                     console.log('Error: ' + err);
+                                    if(err == 'TypeError: Failed to fetch'){
+                                        document.getElementById("score-apis-json-message").innerHTML = 'You need an API key.';
+                                    }                                    
                             });
 
                         }
@@ -232,6 +243,9 @@ width: expand
                                 })
                                 .catch(function(err) {
                                     console.log('Error: ' + err);
+                                    if(err == 'TypeError: Failed to fetch'){
+                                        document.getElementById("score-apis-json-message").innerHTML = 'You need an API key.';
+                                    }                                    
                             });
 
                         }
@@ -264,6 +278,9 @@ width: expand
                                 })
                                 .catch(function(err) {
                                     console.log('Error: ' + err);
+                                    if(err == 'TypeError: Failed to fetch'){
+                                        document.getElementById("score-apis-json-message").innerHTML = 'You need an API key.';
+                                    }
                             });
 
                         }
@@ -301,6 +318,9 @@ width: expand
                                 })
                                 .catch(function(err) {
                                     console.log('Error: ' + err);
+                                    if(err == 'TypeError: Failed to fetch'){
+                                        document.getElementById("score-apis-json-message").innerHTML = 'You need an API key.';
+                                    }                                    
                             });
 
                         }
