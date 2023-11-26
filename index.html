@@ -67,7 +67,7 @@ width: expand
                             }
                         };  
 
-                        fetch('https://engine-api.apis.io/staging/engine/apisjson',options)
+                        fetch('https://engine-api.apis.io/engine/apisjson',options)
                             .then(function(response) {
                                 if (!response.ok) {
                                     console.log('Error with Status Code: ' + response.status);                                
@@ -126,7 +126,7 @@ width: expand
                             }
                         };  
 
-                        fetch('https://engine-api.apis.io/staging/engine/apisjson/apis/properties',options)
+                        fetch('https://engine-api.apis.io/engine/apisjson/apis/properties',options)
                             .then(function(response) {
                                 if (!response.ok) {
                                     console.log('Error with Status Code: ' + response.status);                                
