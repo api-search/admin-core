@@ -34,6 +34,7 @@ width: expand
                 overlay.slug = document.getElementById("slug2-" + row).value;
                 overlay.description = document.getElementById("description2-" + row).value;
                 overlay.image = document.getElementById("image2-" + row).value;              
+                overlay.tags = document.getElementById("tags2-" + row).value;        
 
                 const options = {
                     method: 'PUT',
@@ -106,6 +107,12 @@ width: expand
                                     html += '<textarea class="form-control" id="description-' + i + '" style="height: 175px;">' + data[i].description + '</textarea>';
                                     html += '<textarea class="form-control" id="description2-' + i + '" style="height: 175px; border-color:#50C878;">' + data[i].description2 + '</textarea>';
                                     html += '</div>';  
+
+                                    html += '<div class="mb-3">';
+                                    html += '<label for="name" class="form-label">Tags</label>';
+                                    html += '<input style="" type="text" class="form-control" id="tags-' + i + '" value="' + data[i].tags + '">';
+                                    html += '<input style="border-color:#50C878;" type="text" class="form-control" id="tags2-' + i + '" value="' + data[i].tags2 + '">';
+                                    html += '</div>';                                       
                                     
                                     html += '<div class="mb-3">';
                                     html += '<label for="name" class="form-label">Image</label>';
