@@ -7,328 +7,1265 @@ width: expand
     <div class="row">
         <div class="col-2"></div>
         <div class="col">
-
-            <h1>Administration</h1>  
-            <p>We want to be able to deliver a simple, but powerful solution to API discovery using the APIs.json specification. This is the story and the controls to deliver this solution in an ongoing way using the APIs.io API search engine.</p>
-            <h2>API Key</h2>
-            <p>This narrative uses the APIs.io API to enable the functionality described on this page, so you will need an API key to utilize any of the actions provided in this narrative.</p>
-            <form>
-                <div class="mb-3">
-                <script>
-                    function setAPIKey(){
-                        var token = document.getElementById('token').value;
-                        Cookies.set('token',token);
-                    }
-
-                    function changeToken(t){
-                        Cookies.set('token',t)
-                    }	                    
-                            
-                    var token = getUrlVar('token');	
-                    if(token){
-                        document.getElementById('token').value = token;		
-                        changeToken(token);
-                    }						
-
-                    if(Cookies === "object"){
-                        var stored_token = Cookies.get('token');
-                        if(stored_token){
-                            document.getElementById('token').value = stored_token;	
-                        }     
-                    }                 
-                </script>
-                <input type="text" class="form-control" id="apiKey" aria-describedby="token" value="" onchange="setAPIKey();">
-                </div>
-            </form>
-
-            <h2>Engine Capabilities</h2>
-            <p>To deliver the engine behind the APIs.io search engine we need a handful of capabilities allowing the submission and processing of APIs.json files.</p>
+            <input type="text" class="form-control" id="github_token" style="display: none;">
+            <input type="text" class="form-control" id="openai_token" style="display: none;">
+            <input type="text" class="form-control" id="bing_token" style="display: none;">
+            <input type="text" class="form-control" id="aws_token" style="display: none;">
+            <script>
+                var github_token = getUrlVar('github_token');
+                if (github_token) {
+                    document.getElementById('github_token').value = github_token;
+                }						              
+                var openai_token = getUrlVar('openai_token');
+                if (openai_token) {
+                    document.getElementById('openai_token').value = openai_token;
+                }		
+                var bing_token = getUrlVar('bing_token');
+                if (bing_token) {
+                    document.getElementById('bing_token').value = bing_token;
+                }	
+                var aws_token = getUrlVar('aws_token');
+                if (aws_token) {
+                    document.getElementById('aws_token').value = aws_token;
+                }	                                				              
+            </script>
+            <h2>APIs.io Network Admin</h2>
+            <textarea style="display: none;" id="network" style="width: 100%; height: 100px;"></textarea>
+            <textarea style="display: none;" id="vocabulary" style="width: 100%; height: 100px;"></textarea>
+            <textarea style="display: none;" id="apis_json" style="width: 100%; height: 100px;"></textarea>
+            <textarea id="apis_json_overlay" style="width: 100%; height: 100px;"></textarea>
+            <textarea style="display: none;" id="openapi" style="width: 100%; height: 100px;"></textarea>
             <table width="100%">
                 <tr>
-                    <td align="right">&#8594;</td>
-                    <td>
-                        <a href="https://apis.io/add/" target="_blank">Submit APIs.json</a>
+                    <td align="center">
+                        <select class="form-control" id="node" onchange="manageNode();">
+                            <option>Select Node</option>
+                        </select>
                     </td>
-                    <td>
-                        <p>APIs.json files can be submitted via the form on the APIs.io website. This will submit the URL for an APIs.json into the queue for processing, which can be pulled below.</p>
+                    <td align="center" id="include-select" style="display: none;">
+                        <select class="form-control" id="include" onchange="manageInclude();">
+                            <option>Select Include</option>
+                        </select>
                     </td>
-                    <td id="submit-apisjson-message"></td>
-                </tr>                
-                <script>
-                    function pullAPIsJSON(){
-
-                        document.getElementById("pull-apisjson-message").innerHTML = "Pulling..."
-
-                        const options = {
-                            method: 'PUT',
-                            headers: {
-                                "Accept": "application/json",
-                                "X-API-KEY": document.getElementById("apiKey").value
-                            }
-                        };  
-
-                        fetch('https://engine-api.apis.io/engine/apisjson',options)
-                            .then(function(response) {
-                                if (!response.ok) {
-                                    console.log('Error with Status Code: ' + response.status);                                
-                                }
-                                response.json().then(function(data) {   
-
-                                    //console.log(data);
-                                    document.getElementById("pull-apisjson-message").innerHTML = data.message;
-
-                                });
-                                })
-                                .catch(function(err) {
-                                    console.log('Error: ' + err);
-                                    if(err == 'TypeError: Failed to fetch'){
-                                        console.log("IN");
-                                        document.getElementById("pull-apisjson-message").innerHTML = 'You need an API key.';
-                                    }                                    
-                            });
-
-                        }
-                </script>
-                <tr>
-                    <td align="right">&#8594;</td>
-                    <td>
-                        <a href="#" onclick="pullAPIsJSON(); return false;">Pull APIs.json</a>
-                    </td>
-                    <td>
-                        <p>This pulls any APIs.json that haven't been pulled this week, processing the following details of the APIs.json being pulled.</p>
-                        <ul>
-                            <li>Pulls the APIs.json using the URL provided on submission</li>
-                            <li>Validates the APIs.json as valid 0.14, 0.15, or 0.16</li>
-                            <li>Produces a slug using the name domain of the URL</li>
-                            <li>Inserts URL, slug, name, description, image, and tags in database</li>
-                            <li>Processes any APIs that are available in the apis.json</li>
-                            <li>Processes any properties for the API listed</li>
-                            <li>Process any common properties for the APIs.json</li>
-                            <li>Process any maintainers for the APIs.json</li>
-                            <li>Insert APIs into database</li>
-                            <li>Insert API properties into database</li>
-                            <li>Insert common properties into database</li>
-                            <li>Insert maintainers into database</li>                 
-                        </ul>
-                    </td>
-                    <td id="pull-apisjson-message"></td>
+                    <td align="center" id="include-start" style="display: none;" width="10%">
+                        <input type="text" id="include-start-count" class="form-control" value="0" style="text-align: center; width: 100%;">
+                    </td>  
+                    <td align="center" id="include-end" style="display: none;"" width="10%">
+                        <input type="text" id="include-end-count" class="form-control" value="10" style="text-align: center; width: 100%;">
+                    </td>  
+                    <td align="center" id="include-button" style="display: none;"" width="7%">
+                        <button onclick="manageInclude(); return false;" type="button" class="btn btn-dark">Load</button>
+                    </td>                                                          
                 </tr>
-                <script>
-                    function pullAPIsProperties(){
-
-                        document.getElementById("pull-apis-properties-message").innerHTML = "Pulling..."
-
-                        const options = {
-                            method: 'PUT',
-                            headers: {
-                                "Accept": "application/json",
-                                "X-API-KEY": document.getElementById("apiKey").value
-                            }
-                        };  
-
-                        fetch('https://engine-api.apis.io/engine/apisjson/apis/properties',options)
-                            .then(function(response) {
-                                if (!response.ok) {
-                                    console.log('Error with Status Code: ' + response.status);                                
-                                }
-                                response.json().then(function(data) {   
-
-                                    //console.log(data);
-                                    document.getElementById("pull-apis-properties-message").innerHTML = data.message;
-
-                                });
-                                })
-                                .catch(function(err) {
-                                    console.log('Error: ' + err);
-                                    if(err == 'TypeError: Failed to fetch'){
-                                        document.getElementById("pull-apis-properties-message").innerHTML = 'You need an API key.';
-                                    }                                    
-                            });
-
-                        }
-                </script>            
-                <tr>
-                    <td align="right">&#8594;</td>
-                    <td>
-                        <a href="#" onclick="pullAPIsProperties(); return false;">Pull APIs Properties</a>
-                    </td>
-                    <td>
-                        This pulls any APIs properties that haven't been pulled this week, check and records the HTTP status code for the property, which will be added to score later.
-                    </td>
-                    <td id="pull-apis-properties-message"></td>
-                </tr> 
-                <tr>
-                    <td align="right">&#8594;</td>
-                    <td>
-                        <a href="apis-json-overlay/" target="_blank">APIs.json Overlay</a>
-                    </td>
-                    <td>
-                        <p>This is where we apply an overlay to all of the APIs.json submitted, providing an opportunity to edit the name, slug, description, and image for the overall APIs.json. Right now only the slug is critical to the publishing of consistent APis, but eventually we'll need the rest of the information standardized.</p>
-                    </td>
-                    <td id="apisjson-overlay-message"></td>
-                </tr>   
-                <tr>
-                    <td align="right">&#8594;</td>
-                    <td>
-                        <a href="apis-json-apis-overlay/" target="_blank">APIs.json APIs Overlay</a>
-                    </td>
-                    <td>
-                        <p>This is where we apply an overlay to all of the APIs indexed within the APIs.json files that are submitted, providing an opportunity to edit the name, slug, description, and image for each individual API. This is needed to provide a consistent set of information for publishing to the web site and making available for searching and browsing.</p>
-                    </td>
-                    <td id="apisjson-overlay-message"></td>
-                </tr>                                             
             </table>
+            <table width="100%">
+                <tr>
+                    <td align="center" id="apis_json_toolbar">
+                        <button onclick="saveAPIsJSONOverlay(); return false;" type="button" class="btn btn-dark">Save APIs.json Overlay</button>
+                    </td>
+                </tr>
+            </table>            
+            <div id="manage"></div>
+            <script>
 
-            <h2>Ratings Capabilities</h2>
-            <p>This executes the common functions of the ratings engine.</p>
-            <ul>
-                <script>
-                    function rateAPIsJSON(){
+                // APIs.json Network
+                document.getElementById("alert").innerHTML = "Pulling Search Nodes..."
 
-                        document.getElementById("ratings-apisjson-message").innerHTML = "Pulling..."
+                var options = {
+                    method: 'GET'
+                };
 
-                        const options = {
-                            method: 'PUT',
-                            headers: {
-                                "Accept": "application/json",
-                                "X-API-KEY": document.getElementById("apiKey").value
-                            }
-                        };  
-
-                        fetch('https://ratings-api.apis.io/ratings/apisjson',options)
-                            .then(function(response) {
-                                if (!response.ok) {
-                                    console.log('Error with Status Code: ' + response.status);                                
-                                }
-                                response.json().then(function(data) {   
-
-                                    //console.log(data);
-                                    document.getElementById("ratings-apisjson-message").innerHTML = data.message;
-
-                                });
-                                })
-                                .catch(function(err) {
-                                    console.log('Error: ' + err);
-                                    if(err == 'TypeError: Failed to fetch'){
-                                        document.getElementById("ratings-apisjson-message").innerHTML = 'You need an API key.';
-                                    }                                    
-                            });
-
+                fetch('https://explore.apis.io/apis.json', options)
+                    .then(function (response) {
+                        if (!response.ok) {
+                            console.log('Error with Status Code: ' + response.status);
                         }
-                </script>
-                <li><a href="#" onclick="rateAPIsJSON(); return false;">Rate APIs.json</a> - <span id="ratings-apisjson-message">This rates any APIs.json that haven't been rated this week, applying all of the <a href="https://apis.io/rules/">Spectral rules</a> to each APIs.json, evaluating what properties each API possesses.</span></li>
-                <script>
-                    function rateAPIsProperties(){
+                        response.json().then(function (data) {
 
-                        document.getElementById("ratings-apis-properties-message").innerHTML = "Pulling..."
+                            //var index = JSON.parse(data);
+                            //console.log(data);
+                            //document.getElementById("pull-apisjson-message").innerHTML = data.message;
 
-                        const options = {
-                            method: 'PUT',
-                            headers: {
-                                "Accept": "application/json",
-                                "X-API-KEY": document.getElementById("apiKey").value
+                            for (let i = 0; i < data.network.length; i++) {
+                                var node_name = data.network[i].name;
+                                var node_url = data.network[i].url;
+                                var node_slug = node_url.replace(".apis.io/apis.json", "");
+                                node_slug = node_slug.replace("https://", "");
+                                //console.log(node_slug);
+                                var opt = document.createElement('option');
+                                opt.value = node_url;
+                                opt.innerHTML = node_name;
+                                document.getElementById("node").appendChild(opt);
                             }
-                        };  
 
-                        fetch('https://ratings-api.apis.io/ratings/apisjson/apis/properties',options)
-                            .then(function(response) {
-                                if (!response.ok) {
-                                    console.log('Error with Status Code: ' + response.status);                                
-                                }
-                                response.json().then(function(data) {   
-
-                                    //console.log(data);
-                                    document.getElementById("ratings-apis-properties-message").innerHTML = data.message;
-
-                                });
-                                })
-                                .catch(function(err) {
-                                    console.log('Error: ' + err);
-                                    if(err == 'TypeError: Failed to fetch'){
-                                        document.getElementById("score-apis-json-message").innerHTML = 'You need an API key.';
-                                    }                                    
-                            });
-
+                        });
+                    })
+                    .catch(function (err) {
+                        if (err == 'TypeError: Failed to fetch') {
+                            document.getElementById("alert").innerHTML = err;
                         }
-                </script>            
-                <li><a href="#" onclick="rateAPIsProperties(); return false;">Rate APIs Properties</a> - <span id="ratings-apis-properties-message">This rates any API properties that haven't been rated this week, applying points if it has a 200 status code, and not applying points for any property that 404s.</span></li>
-                <script>
-                    function scoreAPIsJSON(){
+                    });
 
-                        document.getElementById("score-apis-json-message").innerHTML = "Pulling..."
+                document.getElementById("alert").innerHTML = "";
 
-                        const options = {
-                            method: 'PUT',
-                            headers: {
-                                "Accept": "application/json",
-                                "X-API-KEY": document.getElementById("apiKey").value
+                // Pulling Vocabulary
+                document.getElementById("alert").innerHTML = "Pulling Vocabulary"
+
+                var options = {
+                    method: 'GET'
+                };
+
+                fetch('https://raw.githubusercontent.com/apis-json/artisanal/main/vocabulary.yml', options)
+                    .then(function (response) {
+                        if (!response.ok) {
+                            console.log('Error with Status Code: ' + response.status);
+                        }
+                        response.text().then(function (yaml) {
+
+                            var vocabulary = jsyaml.load(yaml);
+                            document.getElementById("vocabulary").value = JSON.stringify(vocabulary);
+
+                        });
+                    })
+                    .catch(function (err) {
+                        if (err == 'TypeError: Failed to fetch') {
+                            document.getElementById("alert").innerHTML = err;
+                        }
+                    });
+
+                document.getElementById("alert").innerHTML = "";
+
+                function splitPascalCase(word) {
+                    var wordRe = /($[a-z])|[A-Z][^A-Z]+/g;
+                try{
+                    word = word.match(wordRe).join(" ");
+                } catch (error) {}
+                    return word;
+                }
+
+                function capitalizeFirstLetter(str) {
+                    return str.replace(/\w\S*/g, function(txt){
+                        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+                    });
+                }                
+
+                function manageNode() {
+
+                    document.getElementById("alert").innerHTML = "Parsing Node..."
+
+                    var apis_json_url = document.getElementById("node").value;
+                    //console.log("pulling11: " + apis_json_url);
+
+                    const options = {
+                        method: 'GET'
+                    };
+
+                    fetch(apis_json_url, options)
+                        .then(function (response) {
+
+                            if (!response.ok) {
+                                console.log('Error with Status Code: ' + response.status);
                             }
-                        };  
+                            response.text().then(function (yaml) {
+                                
+                                //console.log(yaml);
 
-                        fetch('https://ratings-api.apis.io/ratings',options)
-                            .then(function(response) {
-                                if (!response.ok) {
-                                    console.log('Error with Status Code: ' + response.status);                                
+                                var apis_json = jsyaml.load(yaml);
+
+                                document.getElementById("network").value = JSON.stringify(apis_json);
+
+                                //console.log(apis_json);  
+                                for (let i = 0; i < apis_json.includes.length; i++) {
+                                    var include_name = apis_json.includes[i].name;
+                                    var include_url = apis_json.includes[i].url;
+                                    var opt = document.createElement('option');
+                                    opt.value = include_url;
+                                    opt.innerHTML = include_name;
+                                    document.getElementById("include").appendChild(opt);
                                 }
-                                response.json().then(function(data) {   
 
-                                    //console.log(data);
-                                    document.getElementById("score-apis-json-message").innerHTML = data.message;
+                                document.getElementById("include-select").style.display = '';
+                                document.getElementById("include-start").style.display = '';
+                                document.getElementById("include-end").style.display = '';
+                                document.getElementById("include-button").style.display = '';
 
-                                });
-                                })
-                                .catch(function(err) {
-                                    console.log('Error: ' + err);
-                                    if(err == 'TypeError: Failed to fetch'){
-                                        document.getElementById("score-apis-json-message").innerHTML = 'You need an API key.';
+                            });
+                        })
+                        .catch(function (err) {
+                            if (err == 'TypeError: Failed to fetch') {
+                                document.getElementById("alert").innerHTML = err;
+                            }
+                        });
+
+                    document.getElementById("alert").innerHTML = "";
+                }
+
+                function parseTagsFromPath(i,j,path,verb){
+
+                    var openapi = JSON.parse(document.getElementById("openapi").value);
+
+                    var summary = document.getElementById("summary-" + i + '-' + j + '-' + path + '-' + verb).value;
+                    var tags = document.getElementById("tags-" + i + '-' + j + '-' + path + '-' + verb).value;
+                    tags = tags.replace("none");
+
+                    tags = splitPascalCase(tags);
+                    summary = splitPascalCase(summary);
+                    
+                    //console.log("tags: " + tags);
+
+                    var working = path.replaceAll("{","");
+                    working = working.replaceAll("}","");
+                    working = working.replaceAll("/"," ");
+                    working = working.replaceAll("-"," ");
+                    working = splitPascalCase(working);
+                    working = working.trim();
+                    working = capitalizeFirstLetter(working);
+                    working = working.replaceAll(" ",", ");
+
+                    var path_array = working.split(", ");
+                    var summary_array = summary.split(" ");
+
+                    //console.log(path);
+                    //console.log(working);
+
+                    if(!openapi.paths[path][verb].tags){
+                        openapi.paths[path][verb].tags = [];
+                    }
+                    else{
+                        openapi.paths[path][verb].tags = []
+                    }
+
+                    for (let i = 0; i < path_array.length; i++) {
+                        var this_tag = path_array[i];
+                        this_tag = this_tag.replace(/[._-]/g, ' ');
+                        if(this_tag.length>1){
+                            openapi.paths[path][verb].tags.push(this_tag);
+                        }
+                    }
+                    for (let i = 0; i < summary_array.length; i++) {
+                        var this_tag = summary_array[i];
+                        this_tag = this_tag.replace(/[._-]/g, ' ');
+                        if(this_tag.length>1){
+                            openapi.paths[path][verb].tags.push(this_tag);
+                        }
+                    }                    
+                    document.getElementById("tags-" + i + '-' + j + '-' + path + '-' + verb).value = openapi.paths[path][verb].tags;
+                    document.getElementById("openapi").value = JSON.stringify(openapi);
+
+                }
+
+                function parseCamelCaseSummary(i,j,path,verb){
+
+                    var openapi = JSON.parse(document.getElementById("openapi").value);
+
+                    var summary = openapi.paths[path][verb].summary;
+
+                    //console.log("summary: " + summary);
+
+                    summary = splitPascalCase(summary);
+
+                    //console.log("summary: " + summary);
+
+                    openapi.paths[path][verb].summary = summary;
+                    document.getElementById("summary-" + i + '-' + j + '-' + path + '-' + verb).value = summary;
+                    document.getElementById("openapi").value = JSON.stringify(openapi);
+
+                }
+
+                function saveOpenAPISummary(i,j,path,verb){
+                    var openapi = JSON.parse(document.getElementById("openapi").value);
+                    openapi.paths[path][verb].summary = document.getElementById("summary-" + i + '-' + j + '-' + path + '-' + verb).value
+                    document.getElementById("openapi").value = JSON.stringify(openapi);
+                    }  
+                    
+                function saveOpenAPIDescription(i,j,path,verb){
+                    var openapi = JSON.parse(document.getElementById("openapi").value);
+                    openapi.paths[path][verb].description = document.getElementById("description-" + i + '-' + j + '-' + path + '-' + verb).value
+                    document.getElementById("openapi").value = JSON.stringify(openapi);
+                    }   
+                    
+                function saveOpenAPITags(i,j,path,verb){
+                    var openapi = JSON.parse(document.getElementById("openapi").value);
+                    openapi.paths[path][verb].tags = document.getElementById("tags-" + i + '-' + j + '-' + path + '-' + verb).value.split(",");
+                    document.getElementById("openapi").value = JSON.stringify(openapi);
+                    }                       
+
+                function rollbackOpenAPIDescription(i,j,path,verb) {
+
+                    var openapi = JSON.parse(document.getElementById("openapi").value);
+                    document.getElementById("alert").innerHTML = "Writing description"
+
+                    document.getElementById("description-" + i + '-' + j + '-' + path + '-' + verb).value = document.getElementById("description2-" + i + '-' + j + '-' + path + '-' + verb).value;
+                    openapi.paths[path][verb].description = document.getElementById("description2-" + i + '-' + j + '-' + path + '-' + verb).value;
+                    document.getElementById("openapi").value = JSON.stringify(openapi);                     
+                    document.getElementById("alert").innerHTML = "";
+                    }  
+                    
+                function writeOpenAPIDescription(i,j,path,verb) {
+
+                    var openapi = JSON.parse(document.getElementById("openapi").value);
+                    document.getElementById("alert").innerHTML = "Writing description"
+
+                    var openai_token = document.getElementById("openai_token").value;
+
+                    var description = openapi.paths[path][verb].description;
+                    description = description.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "");
+
+                    var open_ai_url = "https://api.openai.com/v1/chat/completions";
+
+                    var chat = {};
+                    chat.model = "gpt-3.5-turbo";
+                    chat.messages = [];
+
+                    var message = {};
+                    message.role = "user";
+                    message.content = "Can you rewrite this description of my API? " + description;
+                    chat.messages.push(message);
+
+                    chat = JSON.stringify(chat);
+                    //console.log(chat);
+
+                    const options = {
+                        method: 'POST',
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": 'Bearer ' + openai_token
+                        },
+                        body: chat
+                    };
+
+                    console.log(options);
+
+                    fetch(open_ai_url, options)
+                        .then(function (response) {
+                            if (!response.ok) {
+                                console.log('Error with Status Code: ' + response.status);
+                            }
+                            response.json().then(function (data) {
+                                console.log(data.choices[0].message.content);
+                                document.getElementById("description2-" + i + '-' + j + '-' + path + '-' + verb).value = document.getElementById("description-" + i + '-' + j + '-' + path + '-' + verb).value;
+                                document.getElementById("description-" + i + '-' + j + '-' + path + '-' + verb).value = data.choices[0].message.content;                                    
+                                openapi.paths[path][verb].description = data.choices[0].message.content;
+                                document.getElementById("openapi").value = JSON.stringify(openapi);
+                            });
+                        })
+                        .catch(function (err) {
+                            if (err == 'TypeError: Failed to fetch') {
+                                document.getElementById("alert").innerHTML = err;
+                            }
+                        });
+
+                    document.getElementById("alert").innerHTML = "";
+                    }                    
+
+                function dedupeOpenAPIOperationTags(i,j,path,verb){
+
+                    var openapi = JSON.parse(document.getElementById("openapi").value);
+
+                    var tags = openapi.paths[path][verb].tags;
+
+                    //console.log("tags: " + tags);
+
+                    var tags_new = [];
+
+                    for (let m = 0; m < tags.length; m++) {
+                        console.log("1: " + tags[m]);
+                        var already = 0;
+                        for (let n = 0; n < tags_new.length; n++) {
+                            console.log("2: " + tags[n]);
+                            console.log(tags[m].trim() + " == " + tags_new[n].trim());
+                            if(tags[m].trim() == tags_new[n].trim()){
+                                already = 1;
+                            }
+                        }
+                        if(already==0){
+                            tags_new.push(tags[m]);
+                        }
+
+                    }
+
+                    openapi.paths[path][verb].tags = tags_new.sort();
+                    document.getElementById("tags-" + i + '-' + j + '-' + path + '-' + verb).value = tags_new;
+                    document.getElementById("openapi").value = JSON.stringify(openapi);
+
+                }   
+                
+                function compareOpenAPIOperationTagsWithVocabulary(i,j,path,verb){
+
+                    var openapi = JSON.parse(document.getElementById("openapi").value);
+                    var vocabulary = JSON.parse(document.getElementById("vocabulary").value);
+
+                    var tags = openapi.paths[path][verb].tags;
+
+                    //console.log("tags: " + tags);
+
+                    var tag_new = [];
+
+                    for (let m = 0; m < tags.length; m++) {
+                        var in_vocabulary = 0;
+                        for (const [word, value] of Object.entries(vocabulary)) {
+                            if(word == tags[m]){
+                                in_vocabulary = 1;
+                                if(value){                                    
+                                    if(value == "~"){
+                                        console.log(tags[m] + " is removed");
+                                    }                          
+                                    else{
+                                        if(value.length > 0){
+                                            tag_new.push(value); 
+                                        } 
                                     }
-                            });
-
-                        }
-                </script>            
-                <li><a href="#" onclick="scoreAPIsJSON(); return false;">Score APIs</a> - <span id="score-apis-json-message">This applies a score to any APIs.json that haven't been scored this week, taking the sum of the Spectral rules run and the 200 OK properties and applies to to each APIs.json that is indexed..</span></li>                
-            </ul>      
-            
-            <h2>Publishing Capabilities</h2>
-            <p>This executes the common functions of the publishing engine. pushing a static representation of the web site to GitHub pages, providing an SEO layer for the website.</p>
-            <ul>
-                <script>
-                    function publishAPIs(){
-
-                        document.getElementById("publishing-apis-message").innerHTML = "Publishing..."
-
-                        const options = {
-                            method: 'PUT',
-                            headers: {
-                                "Accept": "application/json",
-                                "X-API-KEY": document.getElementById("apiKey").value
-                            }
-                        };  
-
-                        fetch('https://publishing-api.apis.io/publish/apis',options)
-                            .then(function(response) {
-                                if (!response.ok) {
-                                    console.log('Error with Status Code: ' + response.status);                                
                                 }
-                                response.json().then(function(data) {   
-
-                                    //console.log(data);
-                                    document.getElementById("publishing-apis-message").innerHTML = data.message;
-
-                                });
-                                })
-                                .catch(function(err) {
-                                    console.log('Error: ' + err);
-                                    if(err == 'TypeError: Failed to fetch'){
-                                        document.getElementById("publishing-apis-message").innerHTML = 'You need an API key.';
-                                    }                                    
-                            });
-
+                                else{
+                                    tag_new.push(tags[m]);  
+                                    }                                
+                            }   
                         }
-                </script>
-                <li><a href="#" onclick="publishAPIs(); return false;">Publish APIs</a> - <span id="publishing-apis-message">This publishes any APIs to GitHub that haven't been published this week, ensuring there is a YAML file and resulting HTML static page which can be browsed and accessed via the API search.</span></li>
-            </ul>              
+                        if(in_vocabulary == 0){
+                            console.log(tags[m] + " not in vocabulary");
+                            tag_new.push(tags[m]);  
+                        }
+                    }                    
 
+                    openapi.paths[path][verb].tags = tag_new;
+                    document.getElementById("tags-" + i + '-' + j + '-' + path + '-' + verb).value = tag_new;
+                    document.getElementById("openapi").value = JSON.stringify(openapi);
+
+                    }                  
+                
+                function resetOpenAPI(i, j, openapi_path, apis_json_url) {                    
+                    document.getElementById("paths-" + i + "-" + j).innerHTML = "";
+                    document.getElementById("manage-" + i).innerHTML = "";
+                    }
+
+                function loadOpenAPI(i, j, openapi_path, apis_json_url) {
+
+                    document.getElementById("alert").innerHTML = "Loading OpenAPI..."
+
+                    //console.log("pulling: " + openapi_path);
+                    //console.log("pulling: " + apis_json_url);
+
+                    var url = apis_json_url.replace("apis.md", openapi_path);
+                    url = url.replace("properties/", "overlays/");
+                    url = url.replace("-openapi-original.yml", "-openapi-search.yml");
+
+                    //console.log("overlay: " + url);
+
+                    const options = {
+                        method: 'GET'
+                    };
+
+                    fetch(url, options)
+                        .then(function (response) {
+
+                            if (!response.ok) {
+                                console.log('Error with Status Code: ' + response.status);
+                            }
+                            response.text().then(function (yaml) {
+
+                                yaml = yaml.replace("---","");
+                                yaml = yaml.replace("---","");                                
+                                var openapi = jsyaml.load(yaml);
+                                document.getElementById("openapi").value = JSON.stringify(openapi);
+
+                                //console.log(openapi);
+                                //console.log(i);
+                                //console.log(j);
+
+                                html = '';
+                                html += '<table width="100%">';
+                                for (const [path, method] of Object.entries(openapi.paths)) {
+                                    for (const [verb, operation] of Object.entries(method)) {    
+                                        
+                                        var operation_summary = operation.summary.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "");
+                                        var operation_description = operation.description.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "");
+                                        var operation_tags = "None";
+                                        if(operation.tags){
+                                            operation_tags = operation.tags.join(", ");
+                                        }
+
+                                        html += '<tr>';
+                                        html += '<td align="right"><strong>path:</strong></td>';
+                                        html += '<td width="70%" id="path-' + i + '-' + j + '-' + path + '-' + verb + '">' + path + '</td>';
+                                        html += '<td width="20%">';
+                                        html += '<a href="#" onclick="parseTagsFromPath(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">Parse Tags</a>';
+                                        html += '</td>';
+                                        html += '</tr>';
+                                        html += '<tr>';
+                                        html += '<td align="right"><strong>verb:</strong></td>';
+                                        html += '<td width="70%"><input type="text" class="form-control" id="verb-' + i + '-' + j + '-' + path + '-' + verb + '" value="' + verb + '"></td>';
+                                        html += '<td width="20%"></td>';
+                                        html += '</tr>';      
+                                        html += '<tr>';
+                                        html += '<td align="right"><strong>summary:</strong></td>';
+                                        html += '<td width="70%"><input type="text" class="form-control" id="summary-' + i + '-' + j + '-' + path + '-' + verb + '" value="' + operation_summary + '" onchange="saveOpenAPISummary(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;"></td>';
+                                        html += '<td width="20%">';
+                                        html += '<a href="#" onclick="parseCamelCaseSummary(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">Parse camelCase</a>';
+                                        html += '</td>';
+                                        html += '</tr>'; 
+                                        html += '<tr>';
+                                        html += '<td align="right"><strong>description:</strong></td>';
+                                        html += '<td width="70%"><input type="hidden" id="description2-' + i + '-' + j + '-' + path + '-' + verb + '"><textarea style="height: 150px;" class="form-control" id="description-' + i + '-' + j + '-' + path + '-' + verb + '" onchange="saveOpenAPIDescription(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">' + operation_description + '</textarea></td>';
+                                        html += '<td width="20%">';
+                                        html += '<a href="#" onclick="writeOpenAPIDescription(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">New Desc</a><br>';
+                                        html += '<a href="#" onclick="rollbackOpenAPIDescription(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">Roll Back</a><br>';
+                                        html += '</td>';                                        
+                                        html += '</tr>';  
+                                        html += '<tr>';
+                                        html += '<td align="right"><strong>tags:</strong></td>';
+                                        html += '<td width="70%"><input type="text" class="form-control" id="tags-' + i + '-' + j + '-' + path + '-' + verb + '" value="' + operation_tags + '" onchange="saveOpenAPITags(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;"></td>';
+                                        html += '<td width="20%">';
+                                        html += '<a href="#" onclick="dedupeOpenAPIOperationTags(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">DeDupe</a><br>';
+                                        html += '<a href="#" onclick="compareOpenAPIOperationTagsWithVocabulary(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">Vocabulary</a>';
+                                        html += '</td>';
+                                        html += '</tr>';                                                                                                                        
+                                    }
+                                }
+                                html += '</table>';                                
+                                document.getElementById("paths-" + i + "-" + j).innerHTML = html;
+                                document.getElementById("alert").innerHTML = "";
+
+                            });
+                        })
+                        .catch(function (err) {
+                            if (err == 'TypeError: Failed to fetch') {
+                                document.getElementById("alert").innerHTML = err;
+                            }
+                        });
+
+                }
+
+                function pullTagsFromOpenAPI(i, j, openapi_path, apis_json_url) {
+
+                    document.getElementById("alert").innerHTML = "Pulling Tags From OpenAPI..."
+                    var openapi = JSON.parse(document.getElementById("openapi").value);
+
+                    var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
+                    apis_json_overlay.apis[i].tags = [];
+                    //console.log(apis_json_overlay);
+                    for (const [path, method] of Object.entries(openapi.paths)) {
+                        for (const [verb, operation] of Object.entries(method)) {
+                            if(operation.tags){
+                                for (let k = 0; k < operation.tags.length; k++) {
+                                    var already = 0;
+                                    for (let l = 0; l < apis_json_overlay.apis[i].tags.length; l++) {
+                                        if(operation.tags[k] == apis_json_overlay.apis[i].tags[l]){
+                                            already = 1;                                                                          
+                                        } 
+                                    }  
+                                    if(already == 0){
+                                        var this_tag = operation.tags[k];
+                                        this_tag = splitPascalCase(this_tag);
+                                        apis_json_overlay.apis[i].tags.push(this_tag);  
+                                    }                                    
+                                }
+                            }
+                        }
+                    }                                     
+
+                    document.getElementById("tags-" + i).value = apis_json_overlay.apis[i].tags;
+                    document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);                    
+
+                    }                
+
+                function saveOpenAPI(i, j, openapi_path, apis_json_url) {
+
+                    var github_token = document.getElementById("github_token").value;
+                    var openapi = JSON.parse(document.getElementById("openapi").value);
+                    //console.log("pulling: " + openapi_path);
+                    //console.log("pulling: " + apis_json_url);
+
+                    var segments = apis_json_url.split("/");
+                    var node = segments[4];
+                    var provider = segments[7];
+
+                    var overlay = openapi_path.replace("properties/","overlays/");
+                    overlay = overlay.replace("-openapi-original.yml", "-openapi-search.yml");
+
+                    var github_url = 'https://api.github.com/repos/api-search/' + node + '/contents/_apis/' + provider + '/' + overlay;
+                    console.log("github_url: " + github_url);                    
+
+                    const options = {
+                        method: 'get',
+                        headers: {
+                            "Accept": "application/vnd.github+json",
+                            "Authorization": 'Bearer ' + github_token
+                        }
+                    };  
+
+                    fetch(github_url,options)
+                        .then(function(response) {
+                            if (!response.ok) {
+                                console.log('Error with Status Code: ' + response.status);
+                                return;
+                            }
+                            response.json().then(function(data) {   
+
+                                var sha = data.sha;
+                            
+                                var c = {};
+                                c.name = "Kin Lane";
+                                c.email = "kinlane@gmail.com";
+
+                                var m = {};
+                                m.message = 'Saving OpenAPI Overlay';
+                                m.committer = c;
+                                m.sha = sha;
+                                m.content = btoa(jsyaml.dump(openapi));
+
+                                const options = {
+                                    method: 'PUT',
+                                    headers: {
+                                        "Accept": "application/vnd.github+json",
+                                        "Authorization": 'Bearer ' + github_token                                 
+                                    },
+                                    body: JSON.stringify(m)
+                                };  
+
+                                fetch(github_url,options)
+                                    .then(function(response) {
+                                        if (!response.ok) {
+                                            console.log('Error with Status Code: ' + response.status);
+                                            return;
+                                        }
+                                        response.json().then(function(data) {   
+                                            console.log(data);                                                                           
+                                        });
+                                    })
+                                    .catch(function(err) {
+                                        console.log('Error: ' + err);
+                                }); 
+                            });
+                        })
+                        .catch(function(err) {
+                            console.log('Error: ' + err);
+                    });
+
+                }
+
+                function saveAPIsJSONOverlay() {
+
+                    var github_token = document.getElementById("github_token").value;
+
+                    var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
+                    
+                    //console.log(apis_json_overlay);
+
+                    var apis_json_url = document.getElementById("include").value;
+                    apis_json_url = apis_json_url.replace("apis.md","overlays/apis-io-search.yml");
+                    
+                    //console.log("pulling overlay: " + apis_json_url);   
+
+                    var segments = apis_json_url.split("/");
+                    var node = segments[4];
+                    var provider = segments[7];
+
+                    var github_url = 'https://api.github.com/repos/api-search/' + node + '/contents/_apis/' + provider + '/overlays/apis-io-search.yml';
+                    //console.log("github_url: " + github_url);                    
+
+                    const options = {
+                        method: 'get',
+                        headers: {
+                            "Accept": "application/vnd.github+json",
+                            "Authorization": 'Bearer ' + github_token
+                        }
+                    };  
+
+                    fetch(github_url,options)
+                        .then(function(response) {
+                            if (!response.ok) {
+                                console.log('Error with Status Code: ' + response.status);
+                                return;
+                            }
+                            response.json().then(function(data) {   
+
+                                var sha = data.sha;
+                            
+                                var c = {};
+                                c.name = "Kin Lane";
+                                c.email = "kinlane@gmail.com";
+
+                                var m = {};
+                                m.message = 'Saving OpenAPI Overlay';
+                                m.committer = c;
+                                m.sha = sha;
+
+                                var save_overlay = jsyaml.dump(apis_json_overlay);
+                                //console.log(save_overlay);
+                                m.content = btoa(unescape(encodeURIComponent(save_overlay)));
+
+                                const options = {
+                                    method: 'PUT',
+                                    headers: {
+                                        "Accept": "application/vnd.github+json",
+                                        "Authorization": 'Bearer ' + github_token                                 
+                                    },
+                                    body: JSON.stringify(m)
+                                };  
+
+                                fetch(github_url,options)
+                                    .then(function(response) {
+                                        if (!response.ok) {
+                                            console.log('Error with Status Code: ' + response.status);
+                                            return;
+                                        }
+                                        response.json().then(function(data) {   
+                                            console.log(data);                                                                           
+                                        });
+                                    })
+                                    .catch(function(err) {
+                                        console.log('Error: ' + err);
+                                }); 
+                            });
+                        })
+                        .catch(function(err) {
+                            console.log('Error: ' + err);
+                    });
+
+                    }                
+
+                function manageNodeOverlay() {
+
+                    document.getElementById("alert").innerHTML = "Parsing Overlay Node..."
+
+                    var apis_json_url = document.getElementById("include").value;
+                    //console.log("pulling overlay: " + apis_json_url);
+                    apis_json_url = apis_json_url.replace("apis.md","overlays/apis-io-search.yml");
+                    //console.log("pulling overlay: " + apis_json_url);
+                    
+                    const options = {
+                        method: 'GET'
+                    };
+
+                    fetch(apis_json_url, options)
+                        .then(function (response) {
+
+                            if (!response.ok) {
+                                console.log('Error with Status Code: ' + response.status);
+                            }
+                            response.text().then(function (yaml) {
+                                yaml = yaml.replace("---", "");
+                                yaml = yaml.replace("---", "");
+                                var apis_json = jsyaml.load(yaml);
+                                document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json);
+
+                                var start = document.getElementById("include-start-count").value;
+                                var end = document.getElementById("include-end-count").value;
+
+                                for (let i = 0; i < apis_json.apis.length; i++) {
+
+                                    if(i >= start && i <= end){
+
+                                    document.getElementById("name-" + i).value = apis_json.apis[i].name;
+                                    document.getElementById("description-" + i).value = apis_json.apis[i].description;
+                                    document.getElementById("tags-" + i).value = apis_json.apis[i].tags.toString();
+
+                                    document.getElementById("baseURL-" + i).value = apis_json.apis[i].baseURL;
+                                    document.getElementById("humanURL-" + i).value = apis_json.apis[i].humanURL;
+
+                                    var html = '';
+
+                                    for (let j = 0; j < apis_json.apis[i].properties.length; j++) {
+
+                                        html += '<tr>';
+                                        html += '<td width="20%"><input type="text" class="form-control" id="property-type-' + i + '-' + j + '" onchange="saveAPIsJSONPropertyType(' + i + ',' + j + ');" value="' + apis_json.apis[i].properties[j].type + '" style="width: 100%;"></td>';
+                                        html += '<td width="30%"><input type="text" class="form-control" id="property-url-' + i + '-' + j + '" onchange="saveAPIsJSONPropertyUrl(' + i + ',' + j + ');" value="' + apis_json.apis[i].properties[j].url + '" style="width: 100%;"></td>';
+
+                                        if (apis_json.apis[i].properties[j].type == 'OpenAPI') {
+                                            html += '<td><a href="' + apis_json.apis[i].properties[j].url + '" target="_blank">View</a></td>';
+                                            html += '<td width="10%" align="center"><a href="#" onclick="loadOpenAPI(' + i + ',' + j + ',' + "'" + apis_json.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Load</a></td>';
+                                            html += '<td width="10%" align="center"><a href="#" onclick="pullTagsFromOpenAPI(' + i + ',' + j + ',' + "'" + apis_json.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Tags</a></td>';
+                                            html += '<td width="10%" align="center"><a href="#" onclick="saveOpenAPI(' + i + ',' + j + ',' + "'" + apis_json.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Save</a></td>';
+                                            html += '<td width="10%" align="center"><a href="#" onclick="resetOpenAPI(' + i + ',' + j + ',' + "'" + apis_json.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Reset</a></td>';
+                                        }
+                                        else {
+                                            html += '<td></td>';
+                                            html += '<td><a href="' + apis_json.apis[i].properties[j].url + '" target="_blank">View</a></td>';
+                                        }
+
+                                        html += '</tr>';
+                                        html += '<tr><td colspan="5" id="paths-' + i + '-' + j + '"></td></tr>';
+
+                                        }
+
+                                        document.getElementById("property-listing-" + i).innerHTML = html;
+                                    }
+                                }
+                            });
+                        })
+                        .catch(function (err) {
+                            if (err == 'TypeError: Failed to fetch') {
+                                document.getElementById("alert").innerHTML = err;
+                            }
+                        });
+
+                    document.getElementById("alert").innerHTML = "";
+                    }  
+                    
+                function saveAPIsJSONName(i){
+                    var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
+                    apis_json_overlay.apis[i].name = document.getElementById("name-" + i).value;
+                    document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
+                    }  
+                    
+                function saveAPIsJSONDescription(i){
+                    var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
+                    apis_json_overlay.apis[i].description = document.getElementById("description-" + i).value;
+                    document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
+                    }   
+                    
+                function saveAPIsJSONTags(i){
+                    var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
+                    apis_json_overlay.apis[i].tags = document.getElementById("tags-" + i).value.split(",");
+                    document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
+                    }     
+
+                function harvestUrl(i,apis_json_url){
+                    
+                    var aws_token = document.getElementById("aws_token").value;
+
+                    var harvest_url = "https://vpjct907o6.execute-api.us-east-1.amazonaws.com/prod?url=" + document.getElementById("humanURL-" + i).value;
+                    
+                    const options = {
+                        method: 'GET',
+                        headers: {
+                            "Accept": "application/json",
+                            "X-API-KEY": aws_token                
+                        }, 
+                    };
+
+                    console.log(options);
+
+                    fetch(harvest_url, options)
+                        .then(function (response) {
+                            if (!response.ok) {
+                                console.log('Error with Status Code: ' + response.status);
+                            }
+                            response.json().then(function (harvest_urls) {
+
+                                //console.log(harvest_urls);
+
+                                var html = '<table width="100%" align="center">';
+                                for (let p = 0; p < harvest_urls.length; p++) {                                     
+                                    var displayUrl = harvest_urls[p];
+                                    var url = new URL(displayUrl);                              
+                                    html += '<tr>';
+                                    html += '<td width="20%" align="center"><input type="text" class="form-control" id="new-property-type-' + i + '-' + p + '" value="" style="width: 100%;"></td>'; 
+                                    html += '<td width="40%" align="left">' + displayUrl + '</td>'; 
+                                    html += '<td width="10%" align="center"><a href="' + displayUrl + '" target="_blank">View</a></td>';
+                                    html += '<td width="15%" align="center"><a href="#" onclick="addNewAPIProperty(' + i + ',' + "'" + apis_json_url + "'" + ',' + "'" + displayUrl + "'" + ',' + p + '); return false;" target="_blank">Add to Properties</a></td>';
+                                    html += '<td width="15%" align="center"><a href="#" onclick="addNewCommonProperty(' + i + ',' + "'" + apis_json_url + "'" + ',' + "'" + displayUrl + "'" + ',' + p + '); return false;" target="_blank">Add to Commons</a></td>';
+                                    html += '</tr>';
+                                }
+                                html += '</table>';
+                                document.getElementById("manage-"+i).innerHTML = html;                                
+
+                            });
+                        })
+                        .catch(function (err) {
+                            if (err == 'TypeError: Failed to fetch') {
+                                document.getElementById("alert").innerHTML = err;
+                            }
+                        });
+
+                }
+
+                function saveAPIsJSONHumanURL(i){
+                    var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
+                    apis_json_overlay.apis[i].humanURL = document.getElementById("humanURL-" + i).value;
+                    document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
+                    }     
+
+                function saveAPIsJSONBaseURL(i){
+                    var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
+                    apis_json_overlay.apis[i].baseURL = document.getElementById("baseURL-" + i).value;
+                    document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
+                    }  
+
+                function saveAPIsJSONPropertyType(i,j){
+                    var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
+                    apis_json_overlay.apis[i].properties[j].type = document.getElementById("property-type-" + i + '-' + j).value;
+                    document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
+                    }                      
+                function saveAPIsJSONPropertyUrl(i,j){
+                    var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
+                    apis_json_overlay.apis[i].properties[j].url = document.getElementById("property-url-" + i + '-' + j).value;
+                    document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
+                    }                      
+
+                function addNewCommonProperty(i,apis_json_url,property_type,property_url,t){
+
+                    var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
+
+                    var p = {};
+                    p.type = document.getElementById("new-property-type-" + i + "-" + t).value;
+                    p.url = property_url;
+
+                    var j = apis_json_overlay.apis[i].properties.length + 1;
+
+                    apis_json_overlay.apis[i].properties.push(p);
+                    document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);                    
+
+                    html = '<tr>';
+                    html += '<td width="20%"><input type="text" class="form-control" id="property-type-' + i + '-' + j + '" onchange="saveAPIsJSONPropertyType(' + i + ',' + j + ');" value="' + property_type + '" style="width: 100%;"></td>';
+                    html += '<td width="30%"><input type="text" class="form-control" id="property-url-' + i + '-' + j + '" onchange="saveAPIsJSONPropertyUrl(' + i + ',' + j + ');" value="' + property_type + '" style="width: 100%;"></td>';
+
+                    if(property_type == 'OpenAPI') {
+                        html += '<td><a href="' + property_url + '" target="_blank">View</a></td>';
+                        html += '<td width="10%" align="center"><a href="#" onclick="loadOpenAPI(' + i + ',' + j + ',' + "'" + property_url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Load</a></td>';
+                        html += '<td width="10%" align="center"><a href="#" onclick="pullTagsFromOpenAPI(' + i + ',' + j + ',' + "'" + property_url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Tags</a></td>';
+                        html += '<td width="10%" align="center"><a href="#" onclick="saveOpenAPI(' + i + ',' + j + ',' + "'" + property_url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Save</a></td>';
+                        html += '<td width="10%" align="center"><a href="#" onclick="resetOpenAPI(' + i + ',' + j + ',' + "'" + property_url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Reset</a></td>';
+                    }
+                    else {
+                        html += '<td></td>';
+                        html += '<td><a href="' + property_url + '" target="_blank">View</a></td>';
+                    }
+
+                    html += '</tr>'; 
+
+                    document.getElementById("property-listing-" + i).innerHTML = document.getElementById("property-listing-" + i).innerHTML + html;
+                    }
+
+                function addNewAPIProperty(i,apis_json_url,property_url,t){
+
+                    var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
+
+                    var property_type = document.getElementById("new-property-type-" + i + "-" + t).value;
+
+                    var p = {};
+                    //console.log("new-property-type-" + i + "-" + t);
+                    p.type = property_type;
+                    p.url = property_url;
+
+                    var j = apis_json_overlay.apis[i].properties.length + 1;
+
+                    apis_json_overlay.apis[i].properties.push(p);
+                    document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);                    
+
+                    html = '<tr>';
+                    html += '<td width="20%"><input type="text" class="form-control" id="property-type-' + i + '-' + j + '" onchange="saveAPIsJSONPropertyType(' + i + ',' + j + ');" value="' + property_type + '" style="width: 100%;"></td>';
+                    html += '<td width="30%"><input type="text" class="form-control" id="property-url-' + i + '-' + j + '" onchange="saveAPIsJSONPropertyUrl(' + i + ',' + j + ');" value="' + property_url + '" style="width: 100%;"></td>';
+
+                    if(property_type == 'OpenAPI') {
+                        html += '<td><a href="' + property_url + '" target="_blank">View</a></td>';
+                        html += '<td width="10%" align="center"><a href="#" onclick="loadOpenAPI(' + i + ',' + j + ',' + "'" + property_url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Load</a></td>';
+                        html += '<td width="10%" align="center"><a href="#" onclick="pullTagsFromOpenAPI(' + i + ',' + j + ',' + "'" + property_url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Tags</a></td>';
+                        html += '<td width="10%" align="center"><a href="#" onclick="saveOpenAPI(' + i + ',' + j + ',' + "'" + property_url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Save</a></td>';
+                        html += '<td width="10%" align="center"><a href="#" onclick="resetOpenAPI(' + i + ',' + j + ',' + "'" + property_url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Reset</a></td>';
+                    }
+                    else {
+                        html += '<td></td>';
+                        html += '<td><a href="' + property_url + '" target="_blank">View</a></td>';
+                    }
+
+                    html += '</tr>'; 
+
+                    document.getElementById("property-listing-" + i).innerHTML = document.getElementById("property-listing-" + i).innerHTML + html;
+                    }
+
+                function addAPIProperty(i,apis_json_url){
+
+                    var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
+                    
+                    var property_type = document.getElementById("property-type-" + i).value;
+                    var property_url = document.getElementById("property-url-" + i).value;
+                    
+                    var p = {};
+                    p.type = property_type;
+                    p.url = property_url;
+
+                    var j = apis_json_overlay.apis[i].properties.length + 1;
+
+                    apis_json_overlay.apis[i].properties.push(p);
+                    document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);                    
+
+                    html = '<tr>';
+                    html += '<td width="20%"><input type="text" class="form-control" id="property-type-' + i + '-' + j + '" onchange="saveAPIsJSONPropertyType(' + i + ',' + j + ');" value="' + property_type + '" style="width: 100%;"></td>';
+                    html += '<td width="30%"><input type="text" class="form-control" id="property-url-' + i + '-' + j + '" onchange="saveAPIsJSONPropertyUrl(' + i + ',' + j + ');" value="' + property_type + '" style="width: 100%;"></td>';
+
+                    if(property_type == 'OpenAPI') {
+                        html += '<td><a href="' + property_url + '" target="_blank">View</a></td>';
+                        html += '<td width="10%" align="center"><a href="#" onclick="loadOpenAPI(' + i + ',' + j + ',' + "'" + property_url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Load</a></td>';
+                        html += '<td width="10%" align="center"><a href="#" onclick="pullTagsFromOpenAPI(' + i + ',' + j + ',' + "'" + property_url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Tags</a></td>';
+                        html += '<td width="10%" align="center"><a href="#" onclick="saveOpenAPI(' + i + ',' + j + ',' + "'" + property_url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Save</a></td>';
+                        html += '<td width="10%" align="center"><a href="#" onclick="resetOpenAPI(' + i + ',' + j + ',' + "'" + property_url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Reset</a></td>';
+                    }
+                    else {
+                        html += '<td></td>';
+                        html += '<td><a href="' + property_url + '" target="_blank">View</a></td>';
+                    }
+
+                    html += '</tr>'; 
+                    
+                    document.getElementById("property-listing-" + i).innerHTML = document.getElementById("property-listing-" + i).innerHTML + html;
+                }
+
+                function stripAPIsJSONDescription(i){
+
+                    var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
+                    var description = document.getElementById("description-" + i).value;
+                    description = description.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "");
+                    description = description.trim();
+                    apis_json_overlay.apis[i].description = description;
+                    document.getElementById("description-" + i).value = description;
+                    document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
+                    }   
+                    
+                function writeAPIsJSONDescription(i) {
+
+                    var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
+                    document.getElementById("alert").innerHTML = "Writing description"
+
+                    var openai_token = document.getElementById("openai_token").value;
+
+                    var description = apis_json_overlay.apis[i].description
+                    description = description.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "");
+
+                    var open_ai_url = "https://api.openai.com/v1/chat/completions";
+
+                    var chat = {};
+                    chat.model = "gpt-3.5-turbo";
+                    chat.messages = [];
+
+                    var message = {};
+                    message.role = "user";
+                    message.content = "Can you rewrite this description of my API? " + description;
+                    chat.messages.push(message);
+
+                    chat = JSON.stringify(chat);
+                    //console.log(chat);
+
+                    const options = {
+                        method: 'POST',
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": 'Bearer ' + openai_token
+                        },
+                        body: chat
+                    };
+
+                    console.log(options);
+
+                    fetch(open_ai_url, options)
+                        .then(function (response) {
+                            if (!response.ok) {
+                                console.log('Error with Status Code: ' + response.status);
+                            }
+                            response.json().then(function (data) {
+                                console.log(data.choices[0].message.content);
+                                document.getElementById("description2-" + i).value = document.getElementById("description-" + i).value;
+                                document.getElementById("description-" + i).value = data.choices[0].message.content;                                    
+                                apis_json_overlay.apis[i].description = data.choices[0].message.content;
+                                document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
+                            });
+                        })
+                        .catch(function (err) {
+                            if (err == 'TypeError: Failed to fetch') {
+                                document.getElementById("alert").innerHTML = err;
+                            }
+                        });
+
+                    document.getElementById("alert").innerHTML = "";
+                    }       
+                    
+                function searchBingforAPIProperties(i){
+
+                    var bing_token = document.getElementById("bing_token").value;
+                    var name = document.getElementById("name-" + i).value;
+                    var search = document.getElementById("search-" + i).value;
+                    search = name + ' ' + search;
+                    search = encodeURIComponent(search);
+
+                    var search_count = "50";
+                    var search_offset = "0";
+
+                    var search_url = 'https://api.bing.microsoft.com/v7.0/search?q=' + search + '&mkt=en-US&offset=0&count=49&responseFilter=Webpages&freshness=Week&setLang=en&cc=us';
+                    console.log(search_url);
+
+                    const options = {
+                        method: 'GET',
+                        headers: {
+                            "Accept": "application/json",
+                            "Ocp-Apim-Subscription-Key": bing_token                 
+                        }
+                    };  
+
+                    fetch(search_url,options)
+                    .then(function(response) {
+                        if (!response.ok) {
+                            console.log('Error with Status Code: ' + response.status);
+                        }
+                        response.json().then(function(data) {   
+
+                            var html = '<table width="100%" align="center">';
+                            for (let j = 0; j < data.webPages.value.length; j++) { 
+                                var displayUrl = data.webPages.value[j].displayUrl;
+                                var url = new URL(displayUrl);
+                                var hostName = url.hostname;     
+                                var api_name = data.webPages.value[j].name;                                
+                                html += '<tr>';
+                                html += '<td>' + api_name + '</td>';
+                                html += '<td>' + hostName + '</td>';
+                                html += '<td width="10%" align="center"><a href="' + displayUrl + '" target="_blank">View</a></td>';
+                                html += '</tr>';
+                            }
+                            html += '</table>';
+                            document.getElementById("manage-"+i).innerHTML = html;
+
+                        });
+                        })
+                        .catch(function(err) {
+                            console.log('Error: ' + err);
+                    });
+
+                    }    
+
+                function manageInclude() {
+
+                    document.getElementById("alert").innerHTML = "Parsing Include..."
+
+                    var apis_json_url = document.getElementById("include").value;
+                    //console.log("pulling1: " + apis_json_url);
+
+                    const options = {
+                        method: 'GET'
+                    };
+
+                    fetch(apis_json_url, options)
+                        .then(function (response) {
+
+                            if (!response.ok) {
+                                console.log('Error with Status Code: ' + response.status);
+                            }
+                            response.text().then(function (yaml) {
+
+                                var html = '';
+
+                                yaml = yaml.replace("---", "");
+                                yaml = yaml.replace("---", "");
+                                var apis_json = jsyaml.load(yaml);
+
+                                var start = document.getElementById("include-start-count").value;
+                                var end = document.getElementById("include-end-count").value;
+
+                                //console.log(apis_json);
+
+                                for (let i = 0; i < apis_json.apis.length; i++) {
+                                    
+                                    if(i >= start && i <= end){
+                                
+                                    //console.log(apis_json.apis[i].name);
+
+                                    var api_name = apis_json.apis[i].name;
+                                    var api_description = apis_json.apis[i].description;
+                                    if (api_description) {
+                                        api_description = api_description.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "");
+                                    }
+                                    else {
+                                        api_description = "No Description";
+                                    }
+
+                                    var api_human_url = apis_json.apis[i].humanURL;
+                                    var api_base_url = apis_json.apis[i].baseURL;
+
+                                    var api_tags = apis_json.apis[i].tags;
+    
+                                    html = document.getElementById("manage").innerHTML;
+                                    html += '<div class="form-group">';
+                                    html += '<label for="name-' + i + '"><strong>Name</strong></label>';
+                                    html += '<input type="text" class="form-control" id="name-' + i + '" onchange="saveAPIsJSONName(' + i + ');" aria-describedby="name-' + i + '" value="' + api_name + '">';
+                                    html += '</div>';
+                                    html += '<div class="form-group">';
+                                    html += '<label for="description-' + i + '"><strong>Description</strong> (<a href="#" onclick="stripAPIsJSONDescription(' + i + '); return false;">Strip HTML</a>) (<a href="#" onclick="writeAPIsJSONDescription(' + i + '); return false;">Write</a>)</label>';
+                                    html += '<input type="hidden" id="description2-' + i + '"><textarea style="height: 150px;" class="form-control" onchange="saveAPIsJSONDescription(' + i + ');" id="description-' + i + '" aria-describedby="description-' + i + '" style="width: 100%: height: 250px;">' + api_description + '</textarea>';
+                                    html += '</div>';
+                                    html += '<div class="form-group">';
+                                    html += '<label for="tags-' + i + '"><strong>Tags</label>';
+                                    html += '<input type="text" class="form-control" id="tags-' + i + '" onchange="saveAPIsJSONTags(' + i + ');" value="' + api_tags + '">';
+                                    html += '</div>';
+                                    html += '<div class="form-group">';
+                                    html += '<label for="name-' + i + '"><strong>Human URL</strong>(<a href="#" onclick="harvestUrl(' + i + ',' + "'" + apis_json_url + "'" + '); return false;">Harvest</a>)</label>';
+                                    html += '<input type="text" class="form-control" id="humanURL-' + i + '" onchange="saveAPIsJSONHumanURL(' + i + ');" value="' + api_human_url + '">';
+                                    html += '</div>';
+                                    html += '<div class="form-group">';
+                                    html += '<label for="name-' + i + '"><strong>Base URL</strong></label>';
+                                    html += '<input type="text" class="form-control" id="baseURL-' + i + '" onchange="saveAPIsJSONBaseURL(' + i + ');" value="' + api_base_url + '">';
+                                    html += '</div>';                                    
+                                    html += '<div class="form-group">';
+                                    html += '<br><table width="100%">';
+                                    html += '<tr>';
+                                    html += '<td width="40%"><h4>Properties</h4></td>';    
+                                    html += '<td width="40%"><input type="text" class="form-control" id="search-' + i + '" value="" style="width: 100%;"></td>'; 
+                                    html += '<td width="20%"><button onclick="searchBingforAPIProperties(' + i + '); return false;" type="button" class="btn btn-dark">Search</button><a href="https://www.google.com/search?q=' + api_name + '" target="_blank">Google</td>'; 
+                                    html += '</tr>';
+                                    html += '</table>';
+
+                                    html += '<table width="100%" id="property-listing-' + i + '">';
+
+                                    for (let j = 0; j < apis_json.apis[i].properties.length; j++) {
+
+                                        html += '<tr>';
+                                        html += '<td width="20%"><input type="text" class="form-control" id="property-type-' + i + '-' + j + '" onchange="saveAPIsJSONPropertyType(' + i + ',' + j + ');" value="' + apis_json.apis[i].properties[j].type + '" style="width: 100%;"></td>';
+                                        html += '<td width="30%"><input type="text" class="form-control" id="property-url-' + i + '-' + j + '" onchange="saveAPIsJSONPropertyUrl(' + i + ',' + j + ');" value="' + apis_json.apis[i].properties[j].url + '" style="width: 100%;"></td>';
+
+                                        if (apis_json.apis[i].properties[j].type == 'OpenAPI') {
+                                            html += '<td><a href="' + apis_json.apis[i].properties[j].url + '" target="_blank">View</a></td>';
+                                            html += '<td width="10%" align="center"><a href="#" onclick="loadOpenAPI(' + i + ',' + j + ',' + "'" + apis_json.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Load</a></td>';
+                                            html += '<td width="10%" align="center"><a href="#" onclick="pullTagsFromOpenAPI(' + i + ',' + j + ',' + "'" + apis_json.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Tags</a></td>';
+                                            html += '<td width="10%" align="center"><a href="#" onclick="saveOpenAPI(' + i + ',' + j + ',' + "'" + apis_json.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Save</a></td>';
+                                            html += '<td width="10%" align="center"><a href="#" onclick="resetOpenAPI(' + i + ',' + j + ',' + "'" + apis_json.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Reset</a></td>';
+                                        }
+                                        else {
+                                            html += '<td></td>';
+                                            html += '<td><a href="' + apis_json.apis[i].properties[j].url + '" target="_blank">View</a></td>';
+                                        }
+
+                                        html += '</tr>';
+                                        html += '<tr><td colspan="5" id="paths-' + i + '-' + j + '"></td></tr>';
+
+                                    }
+                                    html += '</table>';
+
+                                    html += '<table width="100%" id="property-add-' + i + '">';
+                                    html += '<tr>';
+                                    html += '<td width="30%"><strong>Type</strong></td>';
+                                    html += '<td><strong>URL</strong></td>';
+                                    html += '<td width="20%"></td>';                                    
+                                    html += '</tr>';
+                                    html += '<tr>';
+                                    html += '<td width="30%"><input type="text" class="form-control" id="property-type-' + i + '" value="" style="width: 100%;"></td>';
+                                    html += '<td><input type="text" class="form-control" id="property-url-' + i + '" value="" style="width: 100%;"></td>';
+                                    html += '<td width="20%"><button onclick="addAPIProperty(' + i + '); return false;" type="button" class="btn btn-dark">Add Property</button></td>';                                    
+                                    html += '</tr>';                            
+
+                                    html += '</table>';
+                                    html += '</div>';
+                                    html += '<div id="manage-' + i + '"></div>';
+                                    html += '<br><hr><br>';
+                                    
+                                    document.getElementById("manage").innerHTML = html;
+
+                                    }
+
+                                }
+                                //console.log(apis_json); 
+                                document.getElementById("apis_json").value = JSON.stringify(apis_json);
+
+                                // pull overlay
+                                manageNodeOverlay();
+
+                            });
+                        })
+                        .catch(function (err) {
+                            if (err == 'TypeError: Failed to fetch') {
+                                document.getElementById("alert").innerHTML = err;
+                            }
+                        });
+
+                    document.getElementById("alert").innerHTML = "";
+                }                
+            </script>
         </div>
         <div class="col-2"></div>
     </div>
