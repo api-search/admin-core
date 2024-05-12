@@ -33,7 +33,7 @@ width: expand
             <textarea style="display: none;" id="network" style="width: 100%; height: 100px;"></textarea>
             <textarea style="display: none;" id="vocabulary" style="width: 100%; height: 100px;"></textarea>
             <textarea style="display: none;" id="apis_json" style="width: 100%; height: 100px;"></textarea>
-            <textarea id="apis_json_overlay" style="width: 100%; height: 100px;"></textarea>
+            <textarea style="display: none;" id="apis_json_overlay" style="width: 100%; height: 100px;"></textarea>
             <textarea style="display: none;" id="openapi" style="width: 100%; height: 100px;"></textarea>
             <table width="100%">
                 <tr>
@@ -1174,6 +1174,7 @@ width: expand
                             response.text().then(function (yaml) {
 
                                 var html = '';
+                                document.getElementById("manage").innerHTML = html;
 
                                 yaml = yaml.replace("---", "");
                                 yaml = yaml.replace("---", "");
