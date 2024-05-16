@@ -466,7 +466,8 @@ width: expand
                     console.log("pulling: " + openapi_path);
                     console.log("pulling: " + apis_json_url);
 
-                    var url = apis_json_url.replace("overlays/apis-io-search.yml", openapi_path);
+                    //var url = apis_json_url.replace("overlays/apis-io-search.yml", openapi_path);
+                    var url = apis_json_url.replace("apis.md", openapi_path);
                     url = url.replace("properties/", "overlays/");
                     url = url.replace("-openapi-original.yml", "-openapi-search.yml");
 
@@ -484,15 +485,16 @@ width: expand
                             }
                             response.text().then(function (yaml) {
 
+                                //console.log(yaml);
                                 yaml = yaml.replace("---","");
                                 yaml = yaml.replace("---","");                                
                                 var openapi = jsyaml.load(yaml);
-                                document.getElementById("openapi").value = JSON.stringify(openapi);
-
                                 //console.log(openapi);
+                                document.getElementById("openapi").value = JSON.stringify(openapi);
                                 //console.log(i);
                                 //console.log(j);
 
+                                if(openapi.paths){
                                 html = '';
                                 html += '<table width="100%">';
                                 for (const [path, method] of Object.entries(openapi.paths)) {
@@ -545,6 +547,7 @@ width: expand
                                 html += '</table>';                                
                                 document.getElementById("paths-" + i + "-" + j).innerHTML = html;
                                 document.getElementById("alert").innerHTML = "";
+                                }
 
                             });
                         })
@@ -632,7 +635,7 @@ width: expand
                                 m.message = 'Saving OpenAPI Overlay';
                                 m.committer = c;
                                 m.sha = sha;
-                                m.content = btoa(jsyaml.dump(openapi));
+                                m.content = btoa(unescape(encodeURIComponent(openapi)));
 
                                 const options = {
                                     method: 'PUT',
