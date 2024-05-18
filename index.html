@@ -259,6 +259,7 @@ width: expand
                         this_tag = this_tag.replace(/[._-]/g, ' ');
                         console.log("this_tag: " + this_tag);
                         if(this_tag.length>1){
+                            this_tag = this_tag.trim();
                             openapi.paths[path][verb].tags.push(this_tag);
                         }
                     }
@@ -267,6 +268,7 @@ width: expand
                         this_tag = this_tag.replace(/[._-]/g, ' ');
                         console.log("this_tag: " + this_tag);
                         if(this_tag.length>1){
+                            this_tag = this_tag.trim();
                             openapi.paths[path][verb].tags.push(this_tag);
                         }
                     }                    
@@ -379,6 +381,37 @@ width: expand
                     document.getElementById("alert").innerHTML = "";
                     }                    
 
+                    function dedupeAPIsJSONAPITags(i){
+
+                        var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
+
+                        var tags = apis_json_overlay.apis[i].tags;
+
+                        //console.log("tags: " + tags);
+
+                        var tags_new = [];
+
+                        if(apis_json_overlay.apis[i].tags){
+                            for (let m = 0; m < tags.length; m++) {
+                                var already = 0;
+                                for (let n = 0; n < tags_new.length; n++) {
+                                    if(tags[m].trim() == tags_new[n].trim()){
+                                        already = 1;
+                                    }
+                                }
+                                if(already==0){
+                                    this_tag = tags[m].trim();
+                                    tags_new.push(this_tag);
+                                }
+                            }
+                        }
+
+                        apis_json_overlay.apis[i].tags = tags_new.sort();
+                        document.getElementById("tags-" + i).value = tags_new;
+                        document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
+
+                        }                           
+
                 function dedupeOpenAPIOperationTags(i,j,path,verb){
 
                     var openapi = JSON.parse(document.getElementById("openapi").value);
@@ -389,20 +422,19 @@ width: expand
 
                     var tags_new = [];
 
-                    for (let m = 0; m < tags.length; m++) {
-                        console.log("1: " + tags[m]);
-                        var already = 0;
-                        for (let n = 0; n < tags_new.length; n++) {
-                            console.log("2: " + tags[n]);
-                            console.log(tags[m].trim() + " == " + tags_new[n].trim());
-                            if(tags[m].trim() == tags_new[n].trim()){
-                                already = 1;
+                    if(openapi.paths[path][verb].tags){
+                        for (let m = 0; m < tags.length; m++) {
+                            var already = 0;
+                            for (let n = 0; n < tags_new.length; n++) {
+                                if(tags[m].trim() == tags_new[n].trim()){
+                                    already = 1;
+                                }
+                            }
+                            if(already==0){
+                                this_tag = tags[m].trim();
+                                tags_new.push(this_tag);
                             }
                         }
-                        if(already==0){
-                            tags_new.push(tags[m]);
-                        }
-
                     }
 
                     openapi.paths[path][verb].tags = tags_new.sort();
@@ -410,7 +442,56 @@ width: expand
                     document.getElementById("openapi").value = JSON.stringify(openapi);
 
                 }   
-                
+           
+            function compareAPIsJSONAPITagsWithVocabulary(i){
+
+                var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
+                var vocabulary = JSON.parse(document.getElementById("vocabulary").value);
+
+                var tags = apis_json_overlay.apis[i].tags;
+
+                var tag_new = [];
+
+                if(apis_json_overlay.apis[i].tags){
+                    for (let m = 0; m < tags.length; m++) {
+                        var in_vocabulary = 0;
+                        for (const [word, value] of Object.entries(vocabulary)) {                            
+                            if(word == tags[m]){
+                                console.log(word + ' == ' + tags[m]);
+                                in_vocabulary = 1;
+                                if(value){                                    
+                                    if(value == "~"){
+                                        //console.log(tags[m] + " is removed");
+                                    }                          
+                                    else{
+                                        if(value.length > 0){
+                                            this_tag = value;
+                                            this_tag = this_tag.trim();
+                                            tag_new.push(this_tag);
+                                        } 
+                                    }
+                                }
+                                else{
+                                    this_tag = tags[m];
+                                    this_tag = this_tag.trim();
+                                    tag_new.push(this_tag);
+                                    }                                
+                            }   
+                        }
+                        if(in_vocabulary == 0){
+                            this_tag = tags[m];
+                            this_tag = this_tag.trim();
+                            tag_new.push(this_tag); 
+                        }
+                    }   
+                }                 
+
+                apis_json_overlay.apis[i].tags = tag_new;
+                document.getElementById("tags-" + i).value = tag_new;
+                document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
+
+                }                  
+
                 function compareOpenAPIOperationTagsWithVocabulary(i,j,path,verb){
 
                     var openapi = JSON.parse(document.getElementById("openapi").value);
@@ -422,31 +503,38 @@ width: expand
 
                     var tag_new = [];
 
-                    for (let m = 0; m < tags.length; m++) {
-                        var in_vocabulary = 0;
-                        for (const [word, value] of Object.entries(vocabulary)) {
-                            if(word == tags[m]){
-                                in_vocabulary = 1;
-                                if(value){                                    
-                                    if(value == "~"){
-                                        console.log(tags[m] + " is removed");
-                                    }                          
-                                    else{
-                                        if(value.length > 0){
-                                            tag_new.push(value); 
-                                        } 
+                    if(openapi.paths[path][verb].tags){
+                        for (let m = 0; m < tags.length; m++) {
+                            var in_vocabulary = 0;
+                            for (const [word, value] of Object.entries(vocabulary)) {
+                                if(word == tags[m]){
+                                    in_vocabulary = 1;
+                                    if(value){                                    
+                                        if(value == "~"){
+                                            console.log(tags[m] + " is removed");
+                                        }                          
+                                        else{
+                                            if(value.length > 0){
+                                                this_tag = value;
+                                                this_tag = this_tag.trim();
+                                                tag_new.push(this_tag); 
+                                            } 
+                                        }
                                     }
-                                }
-                                else{
-                                    tag_new.push(tags[m]);  
-                                    }                                
-                            }   
-                        }
-                        if(in_vocabulary == 0){
-                            console.log(tags[m] + " not in vocabulary");
-                            tag_new.push(tags[m]);  
-                        }
-                    }                    
+                                    else{
+                                        this_tag = tags[m];
+                                        this_tag = this_tag.trim();
+                                        tag_new.push(this_tag);  
+                                        }                                
+                                }   
+                            }
+                            if(in_vocabulary == 0){
+                                this_tag = tags[m];
+                                this_tag = this_tag.trim();
+                                tag_new.push(this_tag); 
+                            }
+                        }   
+                    }                 
 
                     openapi.paths[path][verb].tags = tag_new;
                     document.getElementById("tags-" + i + '-' + j + '-' + path + '-' + verb).value = tag_new;
@@ -463,15 +551,15 @@ width: expand
 
                     document.getElementById("alert").innerHTML = "Loading OpenAPI..."
 
-                    console.log("pulling: " + openapi_path);
-                    console.log("pulling: " + apis_json_url);
+                    //console.log("pulling: " + openapi_path);
+                    //console.log("pulling: " + apis_json_url);
 
-                    //var url = apis_json_url.replace("overlays/apis-io-search.yml", openapi_path);
-                    var url = apis_json_url.replace("apis.md", openapi_path);
+                    var url = apis_json_url.replace("overlays/apis-io-search.yml", openapi_path);
+                    //var url = apis_json_url.replace("apis.md", openapi_path);
                     url = url.replace("properties/", "overlays/");
                     url = url.replace("-openapi-original.yml", "-openapi-search.yml");
 
-                    console.log("overlay: " + url);
+                    //console.log("overlay: " + url);
 
                     const options = {
                         method: 'GET'
@@ -500,8 +588,14 @@ width: expand
                                 for (const [path, method] of Object.entries(openapi.paths)) {
                                     for (const [verb, operation] of Object.entries(method)) {    
                                         
-                                        var operation_summary = operation.summary.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "");
-                                        var operation_description = operation.description.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "");
+                                        var operation_summary = '';
+                                        if(operation.summary){
+                                            var operation_summary = operation.summary.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "");
+                                        }
+                                        var operation_description = '';
+                                        if(operation.description){
+                                            var operation_description = operation.description.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "");
+                                        }
                                         var operation_tags = "None";
                                         if(operation.tags){
                                             operation_tags = operation.tags.join(", ");
@@ -580,6 +674,7 @@ width: expand
                                     if(already == 0){
                                         var this_tag = operation.tags[k];
                                         this_tag = splitPascalCase(this_tag);
+                                        this_tag = this_tag.trim();
                                         apis_json_overlay.apis[i].tags.push(this_tag);  
                                     }                                    
                                 }
@@ -635,7 +730,8 @@ width: expand
                                 m.message = 'Saving OpenAPI Overlay';
                                 m.committer = c;
                                 m.sha = sha;
-                                m.content = btoa(unescape(encodeURIComponent(openapi)));
+                                var save_overlay = jsyaml.dump(openapi);
+                                m.content = btoa(unescape(encodeURIComponent(save_overlay)));
 
                                 const options = {
                                     method: 'PUT',
@@ -1225,6 +1321,8 @@ width: expand
                                     html += '<div class="form-group">';
                                     html += '<label for="tags-' + i + '"><strong>Tags</label>';
                                     html += '<input type="text" class="form-control" id="tags-' + i + '" onchange="saveAPIsJSONTags(' + i + ');" value="' + api_tags + '">';
+                                    html += '<a href="#" onclick="dedupeAPIsJSONAPITags(' + i + '); return false;">DeDupe</a><br>';
+                                    html += '<a href="#" onclick="compareAPIsJSONAPITagsWithVocabulary(' + i + '); return false;">Vocabulary</a>';                                    
                                     html += '</div>';
                                     html += '<div class="form-group">';
                                     html += '<label for="name-' + i + '"><strong>Human URL</strong></label>';
