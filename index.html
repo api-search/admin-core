@@ -418,8 +418,6 @@ width: expand
 
                     var tags = openapi.paths[path][verb].tags;
 
-                    //console.log("tags: " + tags);
-
                     var tags_new = [];
 
                     if(openapi.paths[path][verb].tags){
@@ -457,7 +455,6 @@ width: expand
                         var in_vocabulary = 0;
                         for (const [word, value] of Object.entries(vocabulary)) {                            
                             if(word == tags[m]){
-                                console.log(word + ' == ' + tags[m]);
                                 in_vocabulary = 1;
                                 if(value){                                    
                                     if(value == "~"){
@@ -473,15 +470,19 @@ width: expand
                                 }
                                 else{
                                     this_tag = tags[m];
-                                    this_tag = this_tag.trim();
-                                    tag_new.push(this_tag);
+                                    if(this_tag.length > 0){
+                                        this_tag = this_tag.trim();
+                                        tag_new.push(this_tag);
+                                        }
                                     }                                
                             }   
                         }
                         if(in_vocabulary == 0){
                             this_tag = tags[m];
-                            this_tag = this_tag.trim();
-                            tag_new.push(this_tag); 
+                            if(this_tag.length > 0){
+                                this_tag = this_tag.trim();
+                                tag_new.push(this_tag); 
+                            }
                         }
                     }   
                 }                 
