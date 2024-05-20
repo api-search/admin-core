@@ -228,7 +228,7 @@ width: expand
                     tags = splitPascalCase(tags);
                     summary = splitPascalCase(summary);
                     
-                    console.log("path: " + path);
+                    //console.log("path: " + path);
 
                     var working = path.replaceAll("{","");
                     working = working.replaceAll("}","");
@@ -240,7 +240,7 @@ width: expand
                     working = working.trim();
                     working = capitalizeFirstLetter(working);
                     working = working.replaceAll(" ",", ");
-                    console.log("working: " + working);
+                    //console.log("working: " + working);
                     var path_array = working.split(", ");
                     var summary_array = summary.split(" ");
 
@@ -257,7 +257,7 @@ width: expand
                     for (let i = 0; i < path_array.length; i++) {
                         var this_tag = path_array[i];
                         this_tag = this_tag.replace(/[._-]/g, ' ');
-                        console.log("this_tag: " + this_tag);
+                        //console.log("this_tag: " + this_tag);
                         if(this_tag.length>1){
                             this_tag = this_tag.trim();
                             openapi.paths[path][verb].tags.push(this_tag);
@@ -266,7 +266,7 @@ width: expand
                     for (let i = 0; i < summary_array.length; i++) {
                         var this_tag = summary_array[i];
                         this_tag = this_tag.replace(/[._-]/g, ' ');
-                        console.log("this_tag: " + this_tag);
+                        //console.log("this_tag: " + this_tag);
                         if(this_tag.length>1){
                             this_tag = this_tag.trim();
                             openapi.paths[path][verb].tags.push(this_tag);
@@ -357,7 +357,7 @@ width: expand
                         body: chat
                     };
 
-                    console.log(options);
+                    //console.log(options);
 
                     fetch(open_ai_url, options)
                         .then(function (response) {
@@ -365,7 +365,7 @@ width: expand
                                 console.log('Error with Status Code: ' + response.status);
                             }
                             response.json().then(function (data) {
-                                console.log(data.choices[0].message.content);
+                                //console.log(data.choices[0].message.content);
                                 document.getElementById("description2-" + i + '-' + j + '-' + path + '-' + verb).value = document.getElementById("description-" + i + '-' + j + '-' + path + '-' + verb).value;
                                 document.getElementById("description-" + i + '-' + j + '-' + path + '-' + verb).value = data.choices[0].message.content;                                    
                                 openapi.paths[path][verb].description = data.choices[0].message.content;
@@ -470,7 +470,7 @@ width: expand
                                 }
                                 else{
                                     this_tag = tags[m];
-                                    if(this_tag.length > 0){
+                                    if(this_tag && this_tag.length > 0){
                                         this_tag = this_tag.trim();
                                         tag_new.push(this_tag);
                                         }
@@ -479,7 +479,7 @@ width: expand
                         }
                         if(in_vocabulary == 0){
                             this_tag = tags[m];
-                            if(this_tag.length > 0){
+                            if(this_tag && this_tag.length > 0){
                                 this_tag = this_tag.trim();
                                 tag_new.push(this_tag); 
                             }
@@ -503,6 +503,7 @@ width: expand
                     //console.log("tags: " + tags);
 
                     var tag_new = [];
+                    var this_tag = '';
 
                     if(openapi.paths[path][verb].tags){
                         for (let m = 0; m < tags.length; m++) {
@@ -512,10 +513,10 @@ width: expand
                                     in_vocabulary = 1;
                                     if(value){                                    
                                         if(value == "~"){
-                                            console.log(tags[m] + " is removed");
+                                            //console.log(tags[m] + " is removed");
                                         }                          
                                         else{
-                                            if(value.length > 0){
+                                            if(value && value.length > 0){
                                                 this_tag = value;
                                                 this_tag = this_tag.trim();
                                                 tag_new.push(this_tag); 
@@ -524,15 +525,19 @@ width: expand
                                     }
                                     else{
                                         this_tag = tags[m];
-                                        this_tag = this_tag.trim();
-                                        tag_new.push(this_tag);  
+                                        if(this_tag && this_tag.length > 0){
+                                            this_tag = this_tag.trim();
+                                            tag_new.push(this_tag);  
+                                            }
                                         }                                
                                 }   
                             }
                             if(in_vocabulary == 0){
                                 this_tag = tags[m];
-                                this_tag = this_tag.trim();
-                                tag_new.push(this_tag); 
+                                if(this_tag && this_tag.length > 0){
+                                    this_tag = this_tag.trim();
+                                    tag_new.push(this_tag); 
+                                }
                             }
                         }   
                     }                 
@@ -588,55 +593,59 @@ width: expand
                                 html += '<table width="100%">';
                                 for (const [path, method] of Object.entries(openapi.paths)) {
                                     for (const [verb, operation] of Object.entries(method)) {    
-                                        
-                                        var operation_summary = '';
-                                        if(operation.summary){
-                                            var operation_summary = operation.summary.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "");
-                                        }
-                                        var operation_description = '';
-                                        if(operation.description){
-                                            var operation_description = operation.description.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "");
-                                        }
-                                        var operation_tags = "None";
-                                        if(operation.tags){
-                                            operation_tags = operation.tags.join(", ");
-                                        }
 
-                                        html += '<tr>';
-                                        html += '<td align="right"><strong>path:</strong></td>';
-                                        html += '<td width="70%" id="path-' + i + '-' + j + '-' + path + '-' + verb + '">' + path + '</td>';
-                                        html += '<td width="20%">';
-                                        html += '<a href="#" onclick="parseTagsFromPath(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">Parse Tags</a>';
-                                        html += '</td>';
-                                        html += '</tr>';
-                                        html += '<tr>';
-                                        html += '<td align="right"><strong>verb:</strong></td>';
-                                        html += '<td width="70%"><input type="text" class="form-control" id="verb-' + i + '-' + j + '-' + path + '-' + verb + '" value="' + verb + '"></td>';
-                                        html += '<td width="20%"></td>';
-                                        html += '</tr>';      
-                                        html += '<tr>';
-                                        html += '<td align="right"><strong>summary:</strong></td>';
-                                        html += '<td width="70%"><input type="text" class="form-control" id="summary-' + i + '-' + j + '-' + path + '-' + verb + '" value="' + operation_summary + '" onchange="saveOpenAPISummary(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;"></td>';
-                                        html += '<td width="20%">';
-                                        html += '<a href="#" onclick="parseCamelCaseSummary(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">Parse camelCase</a>';
-                                        html += '</td>';
-                                        html += '</tr>'; 
-                                        html += '<tr>';
-                                        html += '<td align="right"><strong>description:</strong></td>';
-                                        html += '<td width="70%"><input type="hidden" id="description2-' + i + '-' + j + '-' + path + '-' + verb + '"><textarea style="height: 150px;" class="form-control" id="description-' + i + '-' + j + '-' + path + '-' + verb + '" onchange="saveOpenAPIDescription(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">' + operation_description + '</textarea></td>';
-                                        html += '<td width="20%">';
-                                        html += '<a href="#" onclick="writeOpenAPIDescription(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">New Desc</a><br>';
-                                        html += '<a href="#" onclick="rollbackOpenAPIDescription(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">Roll Back</a><br>';
-                                        html += '</td>';                                        
-                                        html += '</tr>';  
-                                        html += '<tr>';
-                                        html += '<td align="right"><strong>tags:</strong></td>';
-                                        html += '<td width="70%"><input type="text" class="form-control" id="tags-' + i + '-' + j + '-' + path + '-' + verb + '" value="' + operation_tags + '" onchange="saveOpenAPITags(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;"></td>';
-                                        html += '<td width="20%">';
-                                        html += '<a href="#" onclick="dedupeOpenAPIOperationTags(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">DeDupe</a><br>';
-                                        html += '<a href="#" onclick="compareOpenAPIOperationTagsWithVocabulary(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">Vocabulary</a>';
-                                        html += '</td>';
-                                        html += '</tr>';                                                                                                                        
+                                        if(verb.toLowerCase() !='description'){
+                                            
+                                            var operation_summary = '';
+                                            if(operation.summary){
+                                                var operation_summary = operation.summary.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "");
+                                            }
+                                            var operation_description = '';
+                                            if(operation.description){
+                                                var operation_description = operation.description.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "");
+                                            }
+                                            var operation_tags = "None";
+                                            if(operation.tags){
+                                                operation_tags = operation.tags.join(", ");
+                                            }
+
+                                            html += '<tr>';
+                                            html += '<td align="right"><strong>path:</strong></td>';
+                                            html += '<td width="70%" id="path-' + i + '-' + j + '-' + path + '-' + verb + '">' + path + '</td>';
+                                            html += '<td width="20%">';
+                                            html += '<a href="#" onclick="parseTagsFromPath(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">Parse Tags</a>';
+                                            html += '</td>';
+                                            html += '</tr>';
+                                            html += '<tr>';
+                                            html += '<td align="right"><strong>verb:</strong></td>';
+                                            html += '<td width="70%"><input type="text" class="form-control" id="verb-' + i + '-' + j + '-' + path + '-' + verb + '" value="' + verb + '"></td>';
+                                            html += '<td width="20%"></td>';
+                                            html += '</tr>';      
+                                            html += '<tr>';
+                                            html += '<td align="right"><strong>summary:</strong></td>';
+                                            html += '<td width="70%"><input type="text" class="form-control" id="summary-' + i + '-' + j + '-' + path + '-' + verb + '" value="' + operation_summary + '" onchange="saveOpenAPISummary(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;"></td>';
+                                            html += '<td width="20%">';
+                                            html += '<a href="#" onclick="parseCamelCaseSummary(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">Parse camelCase</a>';
+                                            html += '</td>';
+                                            html += '</tr>'; 
+                                            html += '<tr>';
+                                            html += '<td align="right"><strong>description:</strong></td>';
+                                            html += '<td width="70%"><input type="hidden" id="description2-' + i + '-' + j + '-' + path + '-' + verb + '"><textarea style="height: 150px;" class="form-control" id="description-' + i + '-' + j + '-' + path + '-' + verb + '" onchange="saveOpenAPIDescription(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">' + operation_description + '</textarea></td>';
+                                            html += '<td width="20%">';
+                                            html += '<a href="#" onclick="writeOpenAPIDescription(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">New Desc</a><br>';
+                                            html += '<a href="#" onclick="rollbackOpenAPIDescription(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">Roll Back</a><br>';
+                                            html += '</td>';                                        
+                                            html += '</tr>';  
+                                            html += '<tr>';
+                                            html += '<td align="right"><strong>tags:</strong></td>';
+                                            html += '<td width="70%"><input type="text" class="form-control" id="tags-' + i + '-' + j + '-' + path + '-' + verb + '" value="' + operation_tags + '" onchange="saveOpenAPITags(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;"></td>';
+                                            html += '<td width="20%">';
+                                            html += '<a href="#" onclick="dedupeOpenAPIOperationTags(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">DeDupe</a><br>';
+                                            html += '<a href="#" onclick="compareOpenAPIOperationTagsWithVocabulary(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">Vocabulary</a>';
+                                            html += '</td>';
+                                            html += '</tr>';   
+                                            
+                                        }                                                                                                                     
                                     }
                                 }
                                 html += '</table>';                                
@@ -674,9 +683,11 @@ width: expand
                                     }  
                                     if(already == 0){
                                         var this_tag = operation.tags[k];
-                                        this_tag = splitPascalCase(this_tag);
-                                        this_tag = this_tag.trim();
-                                        apis_json_overlay.apis[i].tags.push(this_tag);  
+                                        if(this_tag && this_tag.length > 0){
+                                            this_tag = splitPascalCase(this_tag);                                        
+                                            this_tag = this_tag.trim();
+                                            apis_json_overlay.apis[i].tags.push(this_tag);  
+                                        }
                                     }                                    
                                 }
                             }
@@ -703,7 +714,7 @@ width: expand
                     overlay = overlay.replace("-openapi-original.yml", "-openapi-search.yml");
 
                     var github_url = 'https://api.github.com/repos/api-search/' + node + '/contents/_apis/' + provider + '/' + overlay;
-                    console.log("github_url: " + github_url);                    
+                    //console.log("github_url: " + github_url);                    
 
                     const options = {
                         method: 'get',
@@ -750,7 +761,7 @@ width: expand
                                             return;
                                         }
                                         response.json().then(function(data) {   
-                                            console.log(data);                                                                           
+                                            //console.log(data);                                                                           
                                         });
                                     })
                                     .catch(function(err) {
@@ -831,7 +842,7 @@ width: expand
                                             return;
                                         }
                                         response.json().then(function(data) {   
-                                            console.log(data);                                                                           
+                                            //console.log(data);                                                                           
                                         });
                                     })
                                     .catch(function(err) {
@@ -867,41 +878,49 @@ width: expand
                             response.text().then(function (yaml) {
                                 yaml = yaml.replace("---", "");
                                 yaml = yaml.replace("---", "");
-                                var apis_json = jsyaml.load(yaml);
-                                document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json);
+
+                                var apis_json_overlay = jsyaml.load(yaml);
+                                
+                                var apis_json = JSON.parse(document.getElementById("apis_json").value);
+
+                                document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
 
                                 var start = document.getElementById("include-start-count").value;
                                 var end = document.getElementById("include-end-count").value;
 
-                                for (let i = 0; i < apis_json.apis.length; i++) {
+                                for (let i = 0; i < apis_json_overlay.apis.length; i++) {
 
                                     if(i >= start && i <= end){
              
-                                    document.getElementById("name-" + i).value = apis_json.apis[i].name;
-                                    document.getElementById("description-" + i).value = apis_json.apis[i].description;
-                                    document.getElementById("tags-" + i).value = apis_json.apis[i].tags.toString();
+                                    document.getElementById("name-" + i).value = apis_json_overlay.apis[i].name;
+                                    document.getElementById("description-" + i).value = apis_json_overlay.apis[i].description;
+                                    document.getElementById("tags-" + i).value = apis_json_overlay.apis[i].tags.toString();
 
-                                    document.getElementById("baseURL-" + i).value = apis_json.apis[i].baseURL;
-                                    document.getElementById("humanURL-" + i).value = apis_json.apis[i].humanURL;
+                                    document.getElementById("baseURL-" + i).value = apis_json_overlay.apis[i].baseURL;
+                                    document.getElementById("humanURL-" + i).value = apis_json_overlay.apis[i].humanURL;
 
                                     var html = '';
 
-                                    for (let j = 0; j < apis_json.apis[i].properties.length; j++) {
+                                    if(!apis_json_overlay.apis[i].properties){ 
+                                        apis_json_overlay.apis[i].properties = apis_json.apis[i].properties; 
+                                    }
+
+                                    for (let j = 0; j < apis_json_overlay.apis[i].properties.length; j++) {
 
                                         html += '<tr>';
-                                        html += '<td width="20%"><input type="text" class="form-control" id="property-type-' + i + '-' + j + '" onchange="saveAPIsJSONPropertyType(' + i + ',' + j + ');" value="' + apis_json.apis[i].properties[j].type + '" style="width: 100%;"></td>';
-                                        html += '<td width="30%"><input type="text" class="form-control" id="property-url-' + i + '-' + j + '" onchange="saveAPIsJSONPropertyUrl(' + i + ',' + j + ');" value="' + apis_json.apis[i].properties[j].url + '" style="width: 100%;"></td>';
+                                        html += '<td width="20%"><input type="text" class="form-control" id="property-type-' + i + '-' + j + '" onchange="saveAPIsJSONPropertyType(' + i + ',' + j + ');" value="' + apis_json_overlay.apis[i].properties[j].type + '" style="width: 100%;"></td>';
+                                        html += '<td width="30%"><input type="text" class="form-control" id="property-url-' + i + '-' + j + '" onchange="saveAPIsJSONPropertyUrl(' + i + ',' + j + ');" value="' + apis_json_overlay.apis[i].properties[j].url + '" style="width: 100%;"></td>';
 
-                                        if (apis_json.apis[i].properties[j].type == 'OpenAPI') {
-                                            html += '<td><a href="' + apis_json.apis[i].properties[j].url + '" target="_blank">View</a></td>';
-                                            html += '<td width="10%" align="center"><a href="#" onclick="loadOpenAPI(' + i + ',' + j + ',' + "'" + apis_json.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Load</a></td>';
-                                            html += '<td width="10%" align="center"><a href="#" onclick="pullTagsFromOpenAPI(' + i + ',' + j + ',' + "'" + apis_json.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Tags</a></td>';
-                                            html += '<td width="10%" align="center"><a href="#" onclick="saveOpenAPI(' + i + ',' + j + ',' + "'" + apis_json.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Save</a></td>';
-                                            html += '<td width="10%" align="center"><a href="#" onclick="resetOpenAPI(' + i + ',' + j + ',' + "'" + apis_json.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Reset</a></td>';
+                                        if (apis_json_overlay.apis[i].properties[j].type == 'OpenAPI') {
+                                            html += '<td><a href="' + apis_json_overlay.apis[i].properties[j].url + '" target="_blank">View</a></td>';
+                                            html += '<td width="10%" align="center"><a href="#" onclick="loadOpenAPI(' + i + ',' + j + ',' + "'" + apis_json_overlay.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Load</a></td>';
+                                            html += '<td width="10%" align="center"><a href="#" onclick="pullTagsFromOpenAPI(' + i + ',' + j + ',' + "'" + apis_json_overlay.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Tags</a></td>';
+                                            html += '<td width="10%" align="center"><a href="#" onclick="saveOpenAPI(' + i + ',' + j + ',' + "'" + apis_json_overlay.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Save</a></td>';
+                                            html += '<td width="10%" align="center"><a href="#" onclick="resetOpenAPI(' + i + ',' + j + ',' + "'" + apis_json_overlay.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Reset</a></td>';
                                         }
                                         else {
                                             html += '<td></td>';
-                                            html += '<td><a href="' + apis_json.apis[i].properties[j].url + '" target="_blank">View</a></td>';
+                                            html += '<td><a href="' + apis_json_overlay.apis[i].properties[j].url + '" target="_blank">View</a></td>';
                                             html += '<td width="10%" align="center"><a href="#" onclick="harvestUrl(' + i + ',' + "'" + apis_json_url + "'" + '); return false;">Harvest</a></td>';
                                         }
 
@@ -958,7 +977,7 @@ width: expand
                         }, 
                     };
 
-                    console.log(options);
+                    //console.log(options);
 
                     fetch(harvest_url, options)
                         .then(function (response) {
@@ -1185,7 +1204,7 @@ width: expand
                         body: chat
                     };
 
-                    console.log(options);
+                    //console.log(options);
 
                     fetch(open_ai_url, options)
                         .then(function (response) {
@@ -1193,7 +1212,7 @@ width: expand
                                 console.log('Error with Status Code: ' + response.status);
                             }
                             response.json().then(function (data) {
-                                console.log(data.choices[0].message.content);
+                                //console.log(data.choices[0].message.content);
                                 document.getElementById("description2-" + i).value = document.getElementById("description-" + i).value;
                                 document.getElementById("description-" + i).value = data.choices[0].message.content;                                    
                                 apis_json_overlay.apis[i].description = data.choices[0].message.content;
@@ -1221,7 +1240,7 @@ width: expand
                     var search_offset = "0";
 
                     var search_url = 'https://api.bing.microsoft.com/v7.0/search?q=' + search + '&mkt=en-US&offset=0&count=49&responseFilter=Webpages&freshness=Week&setLang=en&cc=us';
-                    console.log(search_url);
+                    //console.log(search_url);
 
                     const options = {
                         method: 'GET',
