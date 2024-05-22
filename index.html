@@ -295,6 +295,48 @@ width: expand
 
                 }
 
+                function generateSummary(i,j,path,verb){
+
+                    var openapi = JSON.parse(document.getElementById("openapi").value);
+
+                    var path_base = path;
+
+                    console.log("path: " + path_base);
+                    console.log("verb: " + verb);
+
+                    var working = path_base.replaceAll("{","");
+                    working = working.replaceAll("}","");
+                    working = working.replaceAll("/"," ");
+                    working = working.replaceAll("-"," ");
+                    working = working.replaceAll("_"," ");
+                    working = working.replaceAll("id"," ");
+                    working = working.replaceAll("V1","");
+                    working = working.replaceAll(" S "," ");
+      
+                    working = splitPascalCase(working);
+                    working = working.trim();
+                    working = capitalizeFirstLetter(working);
+                    
+                    console.log("working: " + working);   
+                    
+                    var action = "Retrieve ";
+                    if(verb.toLowerCase() == 'post'){
+                        action = "Create d";
+                    }
+                    if(verb.toLowerCase() == 'put'){
+                        action = "Update ";
+                    }
+                    if(verb.toLowerCase() == 'delete'){
+                        action = "Delete ";
+                    }                                        
+                    var summary = action + working;
+
+                    openapi.paths[path][verb].summary = summary;
+                    document.getElementById("summary-" + i + '-' + j + '-' + path + '-' + verb).value = summary;
+                    document.getElementById("openapi").value = JSON.stringify(openapi);
+
+                    }                
+
                 function saveOpenAPISummary(i,j,path,verb){
                     var openapi = JSON.parse(document.getElementById("openapi").value);
                     openapi.paths[path][verb].summary = document.getElementById("summary-" + i + '-' + j + '-' + path + '-' + verb).value
@@ -625,7 +667,8 @@ width: expand
                                             html += '<td align="right"><strong>summary:</strong></td>';
                                             html += '<td width="70%"><input type="text" class="form-control" id="summary-' + i + '-' + j + '-' + path + '-' + verb + '" value="' + operation_summary + '" onchange="saveOpenAPISummary(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;"></td>';
                                             html += '<td width="20%">';
-                                            html += '<a href="#" onclick="parseCamelCaseSummary(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">Parse camelCase</a>';
+                                            html += '<a href="#" onclick="parseCamelCaseSummary(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">Parse camelCase</a><br>';
+                                            html += '<a href="#" onclick="generateSummary(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">Generate</a>';
                                             html += '</td>';
                                             html += '</tr>'; 
                                             html += '<tr>';
