@@ -595,6 +595,27 @@ width: expand
                     document.getElementById("manage-" + i).innerHTML = "";
                     }
 
+                function processOpenAPI(i, j, openapi_path, apis_json_url) {
+
+                    document.getElementById("alert").innerHTML = "Processing OpenAPI..."
+                    var openapi = JSON.parse(document.getElementById("openapi").value);
+
+                    //console.log(apis_json_overlay);
+                    for (const [path, method] of Object.entries(openapi.paths)) {
+                        for (const [verb, operation] of Object.entries(method)) {
+                            
+                            parseCamelCaseSummary(i,j,path,verb);
+                            parseTagsFromPath(i,j,path,verb);
+                            
+                            compareOpenAPIOperationTagsWithVocabulary(i,j,path,verb);
+                            dedupeOpenAPIOperationTags(i,j,path,verb);
+                            compareOpenAPIOperationTagsWithVocabulary(i,j,path,verb);
+
+                        }
+                    }                                     
+
+                    }                    
+
                 function loadOpenAPI(i, j, openapi_path, apis_json_url) {
 
                     document.getElementById("alert").innerHTML = "Loading OpenAPI..."
@@ -954,10 +975,10 @@ width: expand
                                         html += '<td width="20%"><input type="text" class="form-control" id="property-type-' + i + '-' + j + '" onchange="saveAPIsJSONPropertyType(' + i + ',' + j + ');" value="' + apis_json_overlay.apis[i].properties[j].type + '" style="width: 100%;"></td>';
                                         html += '<td width="30%"><input type="text" class="form-control" id="property-url-' + i + '-' + j + '" onchange="saveAPIsJSONPropertyUrl(' + i + ',' + j + ');" value="' + apis_json_overlay.apis[i].properties[j].url + '" style="width: 100%;"></td>';
 
-                                        if (apis_json_overlay.apis[i].properties[j].type == 'OpenAPI') {
-                                            html += '<td><a href="' + apis_json_overlay.apis[i].properties[j].url + '" target="_blank">View</a></td>';
+                                        if (apis_json_overlay.apis[i].properties[j].type == 'OpenAPI') {                                   
                                             html += '<td width="10%" align="center"><a href="#" onclick="loadOpenAPI(' + i + ',' + j + ',' + "'" + apis_json_overlay.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Load</a></td>';
-                                            html += '<td width="10%" align="center"><a href="#" onclick="pullTagsFromOpenAPI(' + i + ',' + j + ',' + "'" + apis_json_overlay.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Tags</a></td>';
+                                            html += '<td width="10%" align="center"><a href="#" onclick="processOpenAPI(' + i + ',' + j + ',' + "'" + apis_json_overlay.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Process</a></td>';
+                                            html += '<td width="10%" align="center"><a href="#" onclick="pullTagsFromOpenAPI(' + i + ',' + j + ',' + "'" + apis_json_overlay.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Tags</a></td>';                                            
                                             html += '<td width="10%" align="center"><a href="#" onclick="saveOpenAPI(' + i + ',' + j + ',' + "'" + apis_json_overlay.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Save</a></td>';
                                             html += '<td width="10%" align="center"><a href="#" onclick="resetOpenAPI(' + i + ',' + j + ',' + "'" + apis_json_overlay.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Reset</a></td>';
                                         }
