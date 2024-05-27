@@ -1400,11 +1400,11 @@ width: expand
                                     html += '</div>';
                                     html += '<div class="form-group">';
                                     html += '<label for="description-' + i + '"><strong>Description</strong> (<a href="#" onclick="stripAPIsJSONDescription(' + i + '); return false;">Strip HTML</a>) (<a href="#" onclick="writeAPIsJSONDescription(' + i + '); return false;">Write</a>)</label>';
-                                    html += '<input type="hidden" id="description2-' + i + '"><textarea style="height: 150px;" class="form-control" onchange="saveAPIsJSONDescription(' + i + ');" id="description-' + i + '" aria-describedby="description-' + i + '" style="width: 100%: height: 250px;">' + api_description + '</textarea>';
+                                    html += '<input type="hidden" id="description2-' + i + '"><textarea rows="10" style="width: 100%: height: 400px;" class="form-control" onchange="saveAPIsJSONDescription(' + i + ');" id="description-' + i + '" aria-describedby="description-' + i + '">' + api_description + '</textarea>';
                                     html += '</div>';
                                     html += '<div class="form-group">';
-                                    html += '<label for="tags-' + i + '"><strong>Tags</label>';
-                                    html += '<input type="text" class="form-control" id="tags-' + i + '" onchange="saveAPIsJSONTags(' + i + ');" value="' + api_tags + '">';
+                                    html += '<label for="tags-' + i + '"><strong>Tags</label>';                                    
+                                    html += '<textarea class="form-control" onchange="saveAPIsJSONTags(' + i + ');" id="tags-' + i + '" aria-describedby="description-' + i + '" style="width: 100%: height: 100px;">' + api_tags + '</textarea>';
                                     html += '<a href="#" onclick="dedupeAPIsJSONAPITags(' + i + '); return false;">DeDupe</a><br>';
                                     html += '<a href="#" onclick="compareAPIsJSONAPITagsWithVocabulary(' + i + '); return false;">Vocabulary</a>';                                    
                                     html += '</div>';
