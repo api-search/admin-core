@@ -309,8 +309,13 @@ width: expand
                     working = working.replaceAll("/"," ");
                     working = working.replaceAll("-"," ");
                     working = working.replaceAll("_"," ");
-                    working = working.replaceAll("id"," ");
+                    //working = working.replaceAll("id"," ");
                     working = working.replaceAll("V1","");
+                    working = working.replaceAll("v1","");
+                    working = working.replaceAll("V2","");
+                    working = working.replaceAll("v2","");                    
+                    working = working.replaceAll("V3","");
+                    working = working.replaceAll("v3","");                    
                     working = working.replaceAll(" S "," ");
       
                     working = splitPascalCase(working);
@@ -321,7 +326,7 @@ width: expand
                     
                     var action = "Retrieve ";
                     if(verb.toLowerCase() == 'post'){
-                        action = "Create d";
+                        action = "Create ";
                     }
                     if(verb.toLowerCase() == 'put'){
                         action = "Update ";
@@ -461,7 +466,6 @@ width: expand
                     var tags = openapi.paths[path][verb].tags;
 
                     var tags_new = [];
-
                     if(openapi.paths[path][verb].tags){
                         for (let m = 0; m < tags.length; m++) {
                             var already = 0;
@@ -603,14 +607,23 @@ width: expand
                     //console.log(apis_json_overlay);
                     for (const [path, method] of Object.entries(openapi.paths)) {
                         for (const [verb, operation] of Object.entries(method)) {
+
+                            if(verb.toLowerCase() !='description'){
                             
-                            parseCamelCaseSummary(i,j,path,verb);
+                            if(!operation.summary){
+                                generateSummary(i,j,path,verb);
+                            }
+                            else{
+                                parseCamelCaseSummary(i,j,path,verb);
+                            }
+
                             parseTagsFromPath(i,j,path,verb);
                             
                             compareOpenAPIOperationTagsWithVocabulary(i,j,path,verb);
                             dedupeOpenAPIOperationTags(i,j,path,verb);
                             compareOpenAPIOperationTagsWithVocabulary(i,j,path,verb);
 
+                            }
                         }
                     }                                     
 
@@ -737,22 +750,24 @@ width: expand
                     //console.log(apis_json_overlay);
                     for (const [path, method] of Object.entries(openapi.paths)) {
                         for (const [verb, operation] of Object.entries(method)) {
-                            if(operation.tags){
-                                for (let k = 0; k < operation.tags.length; k++) {
-                                    var already = 0;
-                                    for (let l = 0; l < apis_json_overlay.apis[i].tags.length; l++) {
-                                        if(operation.tags[k] == apis_json_overlay.apis[i].tags[l]){
-                                            already = 1;                                                                          
-                                        } 
-                                    }  
-                                    if(already == 0){
-                                        var this_tag = operation.tags[k];
-                                        if(this_tag && this_tag.length > 0){
-                                            this_tag = splitPascalCase(this_tag);                                        
-                                            this_tag = this_tag.trim();
-                                            apis_json_overlay.apis[i].tags.push(this_tag);  
-                                        }
-                                    }                                    
+                            if(verb.toLowerCase() !='description'){
+                                if(operation.tags){
+                                    for (let k = 0; k < operation.tags.length; k++) {
+                                        var already = 0;
+                                        for (let l = 0; l < apis_json_overlay.apis[i].tags.length; l++) {
+                                            if(operation.tags[k] == apis_json_overlay.apis[i].tags[l]){
+                                                already = 1;                                                                          
+                                            } 
+                                        }  
+                                        if(already == 0){
+                                            var this_tag = operation.tags[k];
+                                            if(this_tag && this_tag.length > 0){
+                                                this_tag = splitPascalCase(this_tag);                                        
+                                                this_tag = this_tag.trim();
+                                                apis_json_overlay.apis[i].tags.push(this_tag);  
+                                            }
+                                        }                                    
+                                    }
                                 }
                             }
                         }
@@ -960,8 +975,12 @@ width: expand
                                     document.getElementById("description-" + i).value = apis_json_overlay.apis[i].description;
                                     document.getElementById("tags-" + i).value = apis_json_overlay.apis[i].tags.toString();
 
-                                    document.getElementById("baseURL-" + i).value = apis_json_overlay.apis[i].baseURL;
-                                    document.getElementById("humanURL-" + i).value = apis_json_overlay.apis[i].humanURL;
+                                    if(apis_json_overlay.apis[i].baseURL){
+                                        document.getElementById("baseURL-" + i).value = apis_json_overlay.apis[i].baseURL;
+                                    }
+                                    if(apis_json_overlay.apis[i].humanURL){
+                                        document.getElementById("humanURL-" + i).value = apis_json_overlay.apis[i].humanURL;
+                                    }
 
                                     var html = '';
 
