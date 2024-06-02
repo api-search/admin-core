@@ -33,8 +33,9 @@ width: expand
             <textarea style="display: none;" id="network" style="width: 100%; height: 100px;"></textarea>
             <textarea style="display: none;" id="vocabulary" style="width: 100%; height: 100px;"></textarea>
             <textarea style="display: none;" id="apis_json" style="width: 100%; height: 100px;"></textarea>
-            <textarea style="display: none;" id="apis_json_overlay" style="width: 100%; height: 100px;"></textarea>
-            <textarea style="display: none;" id="openapi" style="width: 100%; height: 100px;"></textarea>
+            <textarea id="apis_json_overlay" style="width: 100%; height: 100px;"></textarea>
+            <textarea id="openapi" style="width: 100%; height: 100px;"></textarea>
+            <textarea id="openapi2" style="width: 100%; height: 100px;"></textarea>
             <table width="100%">
                 <tr>
                     <td align="center">
@@ -70,6 +71,17 @@ width: expand
             </table>            
             <div id="manage"></div>
             <script>
+
+                function slugify(str) {
+                    return String(str)
+                        .normalize('NFKD') // split accented characters into their base characters and diacritical marks
+                        .replace(/[\u0300-\u036f]/g, '') // remove all the accents, which happen to be all in the \u03xx UNICODE block.
+                        .trim() // trim leading or trailing whitespace
+                        .toLowerCase() // convert to lowercase
+                        .replace(/[^a-z0-9 -]/g, '-') // remove non-alphanumeric characters
+                        .replace(/\s+/g, '-') // replace spaces with hyphens
+                        .replace(/-+/g, '-'); // remove consecutive hyphens
+                    }   
 
                 // APIs.json Network
                 document.getElementById("alert").innerHTML = "Pulling Search Nodes..."
@@ -626,8 +638,324 @@ width: expand
                             }
                         }
                     }                                     
+                }                    
 
-                    }                    
+                function writeOpenAPIOverlay(node,provider,base_overlay_file_name,openapi_template,github_token,openapi_template){
+
+                    github_overlay_url = 'https://api.github.com/repos/api-search/' + node + '/contents/_apis/' + provider + '/overlays/' + provider + '-' + base_overlay_file_name;
+                    
+                    console.log("github_url: " + github_overlay_url);                    
+
+                    var options = {
+                        method: 'get',
+                        headers: {
+                            "Accept": "application/vnd.github+json",
+                            "X-GitHub-Api-Version": "2022-11-28",
+                            "Authorization": 'Bearer ' + github_token
+                        }
+                    };  
+
+                    fetch(github_overlay_url,options)
+                        .then(function(response) {
+                            if (!response.ok) {
+                                
+                                console.log('Creating: ' + response.status);
+
+                                var c = {};
+                                c.name = "Kin Lane";
+                                c.email = "kinlane@gmail.com";
+
+                                var m = {};
+                                m.message = 'Saving OpenAPI Overlay';
+                                m.committer = c;
+
+                                var save_overlay = jsyaml.dump(openapi_template);
+                                m.content = btoa(unescape(encodeURIComponent(save_overlay)));
+
+                                var options = {
+                                    method: 'PUT',
+                                    headers: {
+                                        "Accept": "application/vnd.github+json",
+                                        "X-GitHub-Api-Version": "2022-11-28",
+                                        "Authorization": 'Bearer ' + github_token                                 
+                                    },
+                                    body: JSON.stringify(m)
+                                };  
+
+                                fetch(github_overlay_url,options)
+                                    .then(function(response) {
+                                        if (!response.ok) {
+                                            console.log('Error with Status Code: ' + response.status);
+                                            return;
+                                        }
+                                        response.json().then(function(data) {   
+                                            //console.log(data);                                                                           
+                                        });
+                                    })
+                                    .catch(function(err) {
+                                        console.log('Error: ' + err);
+                                });
+
+                                return;
+                            }
+                            response.json().then(function(data) {   
+
+                                var sha = data.sha;
+                            
+                                var c = {};
+                                c.name = "Kin Lane";
+                                c.email = "kinlane@gmail.com";
+
+                                var m = {};
+                                m.message = 'Saving OpenAPI Overlay';
+                                m.committer = c;
+                                m.sha = sha;
+                                var save_overlay = jsyaml.dump(openapi_template);
+                                m.content = btoa(unescape(encodeURIComponent(save_overlay)));
+
+                                var options = {
+                                    method: 'PUT',
+                                    headers: {
+                                        "Accept": "application/vnd.github+json",
+                                        "Authorization": 'Bearer ' + github_token                                 
+                                    },
+                                    body: JSON.stringify(m)
+                                };  
+
+                                fetch(github_overlay_url,options)
+                                    .then(function(response) {
+                                        if (!response.ok) {
+                                            console.log('Error with Status Code: ' + response.status);
+                                            return;
+                                        }
+                                        response.json().then(function(data) {   
+                                            //console.log(data);                                                                           
+                                        });
+                                    })
+                                    .catch(function(err) {
+                                        console.log('Error: ' + err);
+                                }); 
+                            });
+                        })
+                        .catch(function(err) {
+                            console.log('Error: ' + err);
+                    });                      
+                }
+
+                function writeOpenAPIProperty(node,provider,base_overlay_file_name,base_openapi_file_name,github_token,openapi_template){
+
+                    var github_property_url = 'https://api.github.com/repos/api-search/' + node + '/contents/_apis/' + provider + '/properties/' + provider + '-' + base_openapi_file_name;
+                    
+                    console.log("github_url: " + github_property_url);                    
+
+                    var options = {
+                        method: 'get',
+                        headers: {
+                            "Accept": "application/vnd.github+json",
+                            "X-GitHub-Api-Version": "2022-11-28",
+                            "Authorization": 'Bearer ' + github_token
+                        }
+                    };  
+
+                    fetch(github_property_url,options)
+                        .then(function(response) {
+                            if (!response.ok) {
+                                
+                                console.log('Creating New Property: ' + response.status);
+
+                                var c = {};
+                                c.name = "Kin Lane";
+                                c.email = "kinlane@gmail.com";
+
+                                var m = {};
+                                m.message = 'Creating New OpenAPI Propery';
+                                m.committer = c;
+
+                                var save_overlay = jsyaml.dump(openapi_template);
+                                m.content = btoa(unescape(encodeURIComponent(save_overlay)));
+
+                                var options = {
+                                    method: 'PUT',
+                                    headers: {
+                                        "Accept": "application/vnd.github+json",
+                                        "X-GitHub-Api-Version": "2022-11-28",
+                                        "Authorization": 'Bearer ' + github_token                                 
+                                    },
+                                    body: JSON.stringify(m)
+                                };  
+
+                                fetch(github_property_url,options)
+                                    .then(function(response) {
+                                        if (!response.ok) {
+                                            console.log('Error with Status Code: ' + response.status);
+                                            return;
+                                        }
+                                        response.json().then(function(data) {   
+                                            //console.log(data);                                                                           
+                                        });
+                                    })
+                                    .catch(function(err) {
+                                        console.log('Error: ' + err);
+                                }); 
+
+                                return;
+                            }
+                            response.json().then(function(data) {   
+
+                                var sha = data.sha;
+                            
+                                var c = {};
+                                c.name = "Kin Lane";
+                                c.email = "kinlane@gmail.com";
+
+                                var m = {};
+                                m.message = 'Saving OpenAPI Property';
+                                m.committer = c;
+                                m.sha = sha;
+                                var save_overlay = jsyaml.dump(openapi_template);
+                                m.content = btoa(unescape(encodeURIComponent(save_overlay)));
+
+                                var options = {
+                                    method: 'PUT',
+                                    headers: {
+                                        "Accept": "application/vnd.github+json",
+                                        "X-GitHub-Api-Version": "2022-11-28",
+                                        "Authorization": 'Bearer ' + github_token                                 
+                                    },
+                                    body: JSON.stringify(m)
+                                };  
+
+                                fetch(github_property_url,options)
+                                    .then(function(response) {
+                                        if (!response.ok) {
+                                            console.log('Error with Status Code: ' + response.status);
+                                            return;
+                                        }
+                                        response.json().then(function(data) {   
+                                            //console.log(data);                                                                           
+                                        });
+                                    })
+                                    .catch(function(err) {
+                                        console.log('Error: ' + err);
+                                }); 
+                            });
+                        })
+                        .catch(function(err) {
+                            console.log('Error: ' + err);
+                    });                    
+                }
+
+                function explodeOpenAPIs(i,apis_json_url){
+
+                    var github_token = document.getElementById("github_token").value;
+                    var openapi = JSON.parse(document.getElementById("openapi").value);
+                    var apis_json = JSON.parse(document.getElementById("apis_json").value);
+                    var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
+                    
+                    //console.log(openapi);
+
+                    var base_path = document.getElementById('select-path-' + i).value;
+
+                    var openapi_template = JSON.parse(document.getElementById("openapi").value);
+                    openapi_template.paths = {};
+                    openapi_template.tags = [];
+                    openapi_template.components = {};
+                    openapi_template.components.schemas = {};                
+
+                    base_name = base_path.replace("/v1/","");
+                    base_name = base_name.replace("/"," ");
+                    base_name = base_name.replace("_"," ");
+
+                    var base_openapi_file_name = slugify(base_name) + "-openapi-original.yml";
+                    var base_overlay_file_name = slugify(base_name) + "-openapi-search.yml";                    
+
+                    //console.log(base_path);
+                    //console.log(base_name);
+
+                    openapi_template.info.title = base_name;
+                    openapi_template.info.description = "Needs description.";
+
+                    var api = {};
+                    api.name = base_name;
+                    api.description = "Needs description.";
+                    api.tags = [];
+                    api.properties = [];
+                    api.overlays = [];
+
+                    var p = {};
+                    p.type = "OpenAPI";
+                    p.url = "properties/" + base_openapi_file_name;
+                    api.properties.push(p);
+                    
+                    var o = {};
+                    o.type = "OpenAPI";
+                    o.url = "overlays/" + base_overlay_file_name;
+                    api.overlays.push(o);                    
+
+                    apis_json_overlay.apis.push(api);
+                    document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
+
+                    apis_json.apis.push(api);
+                    document.getElementById("apis_json").value = JSON.stringify(apis_json);
+
+                    var path_counter = 1;
+                    for (const [path, method] of Object.entries(openapi.paths)) {   
+                        
+                        //console.log(path + ' includes ' + base_path);
+
+                        if(path.includes(base_path)){
+                            
+                            openapi_template.paths[path] = method;
+
+                            for (const [verb, operation] of Object.entries(method)) {  
+                                
+                                if(verb!='servers' && verb!='description' && verb!='x-twilio'){
+
+                                    if(operation.responses && operation.responses['200']){
+                                        if(operation.responses['200'].content['application/json']){
+                                            if(operation.responses['200'].content['application/json'].schema){
+                                                if(operation.responses['200'].content['application/json'].schema['$ref']){
+                                                    var ref = operation.responses['200'].content['application/json'].schema['$ref'];                                            
+                                                    var schema = ref.replace("#/components/schemas/","");
+                                                    //console.log("1: " + schema);
+                                                    openapi_template.components.schemas[schema] = openapi.components.schemas[schema];
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if(operation.responses && operation.responses['default']){
+                                        if(operation.responses['default'].content['application/json']){
+                                            if(operation.responses['default'].content['application/json'].schema){
+                                                if(operation.responses['default'].content['application/json'].schema['$ref']){
+                                                    var ref = operation.responses['default'].content['application/json'].schema['$ref'];
+                                                    var schema = ref.replace("#/components/schemas/","");
+                                                    //console.log("2: " + schema);
+                                                    openapi_template.components.schemas[schema] = openapi.components.schemas[schema];
+                                                }                                
+                                            }
+                                        }
+                                    }
+                                }
+
+                             }
+
+                        path_counter++;
+                        }
+                    }
+
+                    document.getElementById("openapi2").innerHTML = JSON.stringify(openapi_template);
+
+                    var segments = apis_json_url.split("/");
+                    var node = segments[4];
+                    var provider = segments[7];
+
+                    // Write Property...
+                    writeOpenAPIProperty(node,provider,base_overlay_file_name,base_openapi_file_name,github_token,openapi_template);
+
+                    // Write Overlay...
+                    writeOpenAPIOverlay(node,provider,base_overlay_file_name,openapi_template,github_token,openapi_template);
+
+                }     
 
                 function loadOpenAPI(i, j, openapi_path, apis_json_url) {
 
@@ -665,7 +993,51 @@ width: expand
                                 //console.log(j);
 
                                 if(openapi.paths){
-                                html = '';
+                                
+                                    html = '';
+
+                                    html += '<table width="100%" style="background-color: #CCC;">';
+                                    html += '<tr>';
+                                    html += '<td align="right" width="20%"><strong>Paths:</strong></td>';
+                                    html += '<td width="65%">';
+                                    html += '<select id="select-path-' + i + '">';
+                                        
+                                    var base_paths = [];
+                                    for (const [path, method] of Object.entries(openapi.paths)) {
+                                        var path_array = path.split("/");
+                                        //var base_path = path_array[0] + '/' + path_array[1];
+                                        var base_path = path_array[0] + '/';
+                                        if(path_array[1]){
+                                            base_path += path_array[1] + '/';
+                                         }
+                                        if(path_array[2]){
+                                            base_path += path_array[2] + '/';
+                                        }
+                                        if(path_array[3]){
+                                            base_path += path_array[3];
+                                        }
+                                        var already = 0;
+                                        for (let i = 0; i < base_paths.length; i++) {                                        
+                                            if(base_paths[i] == base_path){
+                                                already = 1;
+                                            }                                             
+                                        }  
+                                        if(already == 0){
+                                            base_paths.push(base_path);
+                                        }                                  
+                                    }
+                                    for (let i = 0; i < base_paths.length; i++) { 
+                                        html += '<option value="' + base_paths[i] + '">' + base_paths[i] + '</option>'; 
+                                    }                
+
+                                html += '</select>';   
+                                html += '</td>';
+                                html += '<td width="15%" align="center">';
+                                html += '<a href="#" onclick="explodeOpenAPIs(' + i + ',' + "'" + apis_json_url + "'" + '); return false;">BREAK UP</a>';
+                                html += '</td>';
+                                html += '</tr>';                                
+                                html += '</table>';   
+                                html += '<hr>';   
                                 html += '<table width="100%">';
                                 for (const [path, method] of Object.entries(openapi.paths)) {
                                     for (const [verb, operation] of Object.entries(method)) {    
@@ -726,7 +1098,9 @@ width: expand
                                     }
                                 }
                                 html += '</table>';                                
+
                                 document.getElementById("paths-" + i + "-" + j).innerHTML = html;
+
                                 document.getElementById("alert").innerHTML = "";
                                 }
 
