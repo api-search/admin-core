@@ -61,14 +61,24 @@ width: expand
             </table>
             <table width="100%">
                 <tr>
-                    <td align="center" id="apis_json_toolbar">
+                    <td align="center" id="apis_json_node_overlay_toolbar">
                         <button onclick="manageNodeOverlay(); return false;" type="button" class="btn btn-dark">Apply APIs.json Overlay</button>
-                    </td>                    
+                    </td>        
                     <td align="center" id="apis_json_toolbar">
+                        <button onclick="saveAPIsJSON(); return false;" type="button" class="btn btn-dark">Save APIs.json</button>
+                    </td>                                
+                    <td align="center" id="apis_json_overlay_toolbar">
                         <button onclick="saveAPIsJSONOverlay(); return false;" type="button" class="btn btn-dark">Save APIs.json Overlay</button>
                     </td>
                 </tr>
-            </table>            
+            </table>  
+            <table width="100%">
+                <tr>
+                    <td align="center" id="apis_json_node_overlay_toolbar">
+                        <button onclick="cleanAPINames(); return false;" type="button" class="btn btn-dark">Clean APIs Names</button>
+                    </td>   
+                </tr>
+            </table>                        
             <div id="manage"></div>
             <script>
 
@@ -149,6 +159,61 @@ width: expand
                     });
 
                 document.getElementById("alert").innerHTML = "";
+
+                function cleanAPINames(){
+
+                    var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
+
+                    for (let i = 0; i < apis_json_overlay.apis.length; i++) {
+
+                        var api_name = apis_json_overlay.apis[i].name;
+                        var api_json_name = apis_json_overlay.name;
+
+                        var working = api_name.replaceAll("{","");
+                        
+                        working = working.replaceAll("}","");
+                        working = working.replaceAll("/"," ");
+                        working = working.replaceAll("-"," ");
+                        working = working.replaceAll("_"," ");                        
+                        working = splitPascalCase(working);
+                        working = working.toLowerCase();  
+                        working = working.replaceAll(" user user "," user ");
+
+                        working = working.replaceAll("userid","");
+                        working = working.replaceAll("itemid","");
+
+                        working = working.replaceAll(" id"," ");
+                        working = working.replaceAll(" api"," API");
+                        working = working.replaceAll("user id",""); 
+                        working = working.replaceAll("  "," ");                                               
+                        
+                        // BUNQ _ ONLY
+                        working = working.replaceAll("User ",""); 
+
+
+                        working = capitalizeFirstLetter(working);
+                        working = working.trim();
+
+                        if(!working.includes(api_json_name)){
+                            working = api_json_name + ' ' + working;
+                        }
+
+                        if(!working.includes('API')){
+                            working = working + ' API';
+                        }               
+                        
+                        working = working.replaceAll("Api API","API");
+                        
+                        console.log("working: " + working);
+
+                        apis_json_overlay.apis[i].name = working;
+                        document.getElementById('name-' + i).value = working;
+                                 
+                    }
+
+                    document.getElementById("apis_json_overlay").value  = JSON.stringify(apis_json_overlay);                  
+
+                }
 
                 function splitPascalCase(word) {
                     const camelCase = word.replace(/([a-z])([A-Z])/g, '$1 $2').split(" ");
@@ -855,6 +920,8 @@ width: expand
                     //console.log(openapi);
 
                     var base_path = document.getElementById('select-path-' + i).value;
+                    var base_path_override = document.getElementById('select-path-override-' + i).value;
+                    if(base_path_override!=''){ base_path = base_path_override; }
 
                     var openapi_template = JSON.parse(document.getElementById("openapi").value);
                     openapi_template.paths = {};
@@ -865,6 +932,10 @@ width: expand
                     base_name = base_path.replace("/v1/","");
                     base_name = base_name.replace("/"," ");
                     base_name = base_name.replace("_"," ");
+
+                    var segments = apis_json_url.split("/");
+                    var node = segments[4];
+                    var provider = segments[7];                    
 
                     var base_openapi_file_name = slugify(base_name) + "-openapi-original.yml";
                     var base_overlay_file_name = slugify(base_name) + "-openapi-search.yml";                    
@@ -884,12 +955,12 @@ width: expand
 
                     var p = {};
                     p.type = "OpenAPI";
-                    p.url = "properties/" + base_openapi_file_name;
+                    p.url = "properties/" + provider + '-' + base_openapi_file_name;
                     api.properties.push(p);
                     
                     var o = {};
                     o.type = "OpenAPI";
-                    o.url = "overlays/" + base_overlay_file_name;
+                    o.url = "overlays/" + provider + '-' + base_overlay_file_name;
                     api.overlays.push(o);                    
 
                     apis_json_overlay.apis.push(api);
@@ -912,13 +983,15 @@ width: expand
                                 if(verb!='servers' && verb!='description' && verb!='x-twilio'){
 
                                     if(operation.responses && operation.responses['200']){
-                                        if(operation.responses['200'].content['application/json']){
-                                            if(operation.responses['200'].content['application/json'].schema){
-                                                if(operation.responses['200'].content['application/json'].schema['$ref']){
-                                                    var ref = operation.responses['200'].content['application/json'].schema['$ref'];                                            
-                                                    var schema = ref.replace("#/components/schemas/","");
-                                                    //console.log("1: " + schema);
-                                                    openapi_template.components.schemas[schema] = openapi.components.schemas[schema];
+                                        if(operation.responses['200'].content){
+                                            if(operation.responses['200'].content['application/json']){
+                                                if(operation.responses['200'].content['application/json'].schema){
+                                                    if(operation.responses['200'].content['application/json'].schema['$ref']){
+                                                        var ref = operation.responses['200'].content['application/json'].schema['$ref'];                                            
+                                                        var schema = ref.replace("#/components/schemas/","");
+                                                        //console.log("1: " + schema);
+                                                        openapi_template.components.schemas[schema] = openapi.components.schemas[schema];
+                                                    }
                                                 }
                                             }
                                         }
@@ -945,31 +1018,262 @@ width: expand
 
                     document.getElementById("openapi2").innerHTML = JSON.stringify(openapi_template);
 
-                    var segments = apis_json_url.split("/");
-                    var node = segments[4];
-                    var provider = segments[7];
-
                     // Write Property...
-                    writeOpenAPIProperty(node,provider,base_overlay_file_name,base_openapi_file_name,github_token,openapi_template);
+                    writeOpenAPIProperty(node,provider,base_openapi_file_name,base_openapi_file_name,github_token,openapi_template);
 
                     // Write Overlay...
-                    writeOpenAPIOverlay(node,provider,base_overlay_file_name,openapi_template,github_token,openapi_template);
+                    //writeOpenAPIOverlay(node,provider,base_overlay_file_name,openapi_template,github_token,openapi_template);
 
                 }     
 
-                function loadOpenAPI(i, j, openapi_path, apis_json_url) {
+            function createOpenAPIOverlay(i, j, openapi_path, apis_json_url) {
+
+                document.getElementById("alert").innerHTML = "Loading OpenAPI...";
+
+                var openapi = JSON.parse(document.getElementById("openapi").value);
+                var github_token = document.getElementById("github_token").value;
+
+                console.log("pulling: " + openapi_path);
+                console.log("pulling: " + apis_json_url);
+
+                var url = apis_json_url.replace("overlays/apis-io-search.yml", openapi_path);
+                //var url = apis_json_url.replace("apis.md", openapi_path);
+                url = url.replace("properties/", "overlays/");
+                url = url.replace("-openapi-original.yml", "-openapi-search.yml");
+
+                console.log("overlay: " + url);
+
+                const options = {
+                    method: 'GET'
+                };
+
+                fetch(url, options)
+                    .then(function (response) {
+
+                        if (!response.ok) {
+                            
+                            console.log('Create OpenAPI Overlay: ' + response.status);
+                    
+                            var c = {};
+                            c.name = "Kin Lane";
+                            c.email = "kinlane@gmail.com";
+
+                            var m = {};
+                            m.message = 'Create OpenAPI Overlay';
+                            m.committer = c;
+
+                            var save_overlay = jsyaml.dump(openapi);
+                            m.content = btoa(unescape(encodeURIComponent(save_overlay)));
+
+                            var options = {
+                                method: 'PUT',
+                                headers: {
+                                    "Accept": "application/vnd.github+json",
+                                    "X-GitHub-Api-Version": "2022-11-28",
+                                    "Authorization": 'Bearer ' + github_token                                 
+                                },
+                                body: JSON.stringify(m)
+                            };  
+
+                            fetch(github_property_url,options)
+                                .then(function(response) {
+                                    if (!response.ok) {
+                                        console.log('Error with Status Code: ' + response.status);
+                                        return;
+                                    }
+                                    response.json().then(function(data) {   
+                                        //console.log(data);                                                                           
+                                    });
+                                })
+                                .catch(function(err) {
+                                    console.log('Error: ' + err);
+                            });                             
+
+                        }
+                        response.text().then(function (yaml) {                        
+
+                        });
+                    })
+                    .catch(function (err) {
+                        if (err == 'TypeError: Failed to fetch') {
+                            document.getElementById("alert").innerHTML = err;
+                        }
+                    });
+
+                }
+
+            function loadOpenAPIProperty(i, j, openapi_path, apis_json_url) {
+
+                document.getElementById("alert").innerHTML = "Loading OpenAPI..."
+
+                console.log("pulling: " + openapi_path);
+                console.log("pulling: " + apis_json_url);
+
+                var url = apis_json_url.replace("overlays/apis-io-search.yml", openapi_path);
+
+                console.log("overlay: " + url);
+
+                const options = {
+                    method: 'GET'
+                };
+
+                fetch(url, options)
+                    .then(function (response) {
+
+                        if (!response.ok) {
+                            console.log('Error with Status Code: ' + response.status);
+                        }
+                        response.text().then(function (yaml) {
+
+                            //console.log(yaml);
+                            yaml = yaml.replace("---","");
+                            yaml = yaml.replace("---","");                                
+                            var openapi = jsyaml.load(yaml);
+                            //console.log(openapi);
+                            document.getElementById("openapi").value = JSON.stringify(openapi);
+                            //console.log(i);
+                            //console.log(j);
+
+                            if(openapi.paths){
+                            
+                                html = '';
+
+                                html += '<table width="100%" style="background-color: #CCC;">';
+                                html += '<tr>';
+                                html += '<td align="right" width="20%"><strong>Paths:</strong></td>';
+                                html += '<td width="45%">';
+                                html += '<select id="select-path-' + i + '">';
+                                    
+                                var base_paths = [];
+                                for (const [path, method] of Object.entries(openapi.paths)) {
+                                    var path_array = path.split("/");
+                                    //var base_path = path_array[0] + '/' + path_array[1];
+                                    var base_path = path_array[0] + '/';
+                                    if(path_array[1]){
+                                        base_path += path_array[1] + '/';
+                                    }
+                                    if(path_array[2]){
+                                        base_path += path_array[2] + '/';
+                                    }
+                                    if(path_array[3]){
+                                        base_path += path_array[3] + '/';
+                                    }
+                                    if(path_array[4]){
+                                        base_path += path_array[4] + '/';
+                                    }                                    
+                                    var already = 0;
+                                    for (let i = 0; i < base_paths.length; i++) {                                        
+                                        if(base_paths[i] == base_path){
+                                            already = 1;
+                                        }                                             
+                                    }  
+                                    if(already == 0){
+                                        base_paths.push(base_path);
+                                    }                                  
+                                }
+                                for (let i = 0; i < base_paths.length; i++) { 
+                                    html += '<option value="' + base_paths[i] + '">' + base_paths[i] + '</option>'; 
+                                }                
+
+                            html += '</select>';   
+                            html += '</td>';
+                            html += '<td width="20%" align="center">';
+                            html += '<input type="text" id="select-path-override-' + i + '" value="">';
+                            html += '</td>';                            
+                            html += '<td width="15%" align="center">';
+                            html += '<a href="#" onclick="explodeOpenAPIs(' + i + ',' + "'" + apis_json_url + "'" + '); return false;">BREAK UP</a>';
+                            html += '</td>';
+                            html += '</tr>';                                
+                            html += '</table>';   
+                            html += '<hr>';   
+                            html += '<table width="100%">';
+                            for (const [path, method] of Object.entries(openapi.paths)) {
+                                for (const [verb, operation] of Object.entries(method)) {    
+
+                                    if(verb.toLowerCase() !='description'){
+                                        
+                                        var operation_summary = '';
+                                        if(operation.summary){
+                                            var operation_summary = operation.summary.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "");
+                                        }
+                                        var operation_description = '';
+                                        if(operation.description){
+                                            var operation_description = operation.description.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "");
+                                        }
+                                        var operation_tags = "None";
+                                        if(operation.tags){
+                                            operation_tags = operation.tags.join(", ");
+                                        }
+
+                                        html += '<tr>';
+                                        html += '<td align="right"><strong>path:</strong></td>';
+                                        html += '<td width="70%" id="path-' + i + '-' + j + '-' + path + '-' + verb + '">' + path + '</td>';
+                                        html += '<td width="20%">';
+                                        html += '<a href="#" onclick="parseTagsFromPath(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">Parse Tags</a>';
+                                        html += '</td>';
+                                        html += '</tr>';
+                                        html += '<tr>';
+                                        html += '<td align="right"><strong>verb:</strong></td>';
+                                        html += '<td width="70%"><input type="text" class="form-control" id="verb-' + i + '-' + j + '-' + path + '-' + verb + '" value="' + verb + '"></td>';
+                                        html += '<td width="20%"></td>';
+                                        html += '</tr>';      
+                                        html += '<tr>';
+                                        html += '<td align="right"><strong>summary:</strong></td>';
+                                        html += '<td width="70%"><input type="text" class="form-control" id="summary-' + i + '-' + j + '-' + path + '-' + verb + '" value="' + operation_summary + '" onchange="saveOpenAPISummary(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;"></td>';
+                                        html += '<td width="20%">';
+                                        html += '<a href="#" onclick="parseCamelCaseSummary(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">Parse camelCase</a><br>';
+                                        html += '<a href="#" onclick="generateSummary(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">Generate</a>';
+                                        html += '</td>';
+                                        html += '</tr>'; 
+                                        html += '<tr>';
+                                        html += '<td align="right"><strong>description:</strong></td>';
+                                        html += '<td width="70%"><input type="hidden" id="description2-' + i + '-' + j + '-' + path + '-' + verb + '"><textarea style="height: 150px;" class="form-control" id="description-' + i + '-' + j + '-' + path + '-' + verb + '" onchange="saveOpenAPIDescription(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">' + operation_description + '</textarea></td>';
+                                        html += '<td width="20%">';
+                                        html += '<a href="#" onclick="writeOpenAPIDescription(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">New Desc</a><br>';
+                                        html += '<a href="#" onclick="rollbackOpenAPIDescription(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">Roll Back</a><br>';
+                                        html += '</td>';                                        
+                                        html += '</tr>';  
+                                        html += '<tr>';
+                                        html += '<td align="right"><strong>tags:</strong></td>';
+                                        html += '<td width="70%"><input type="text" class="form-control" id="tags-' + i + '-' + j + '-' + path + '-' + verb + '" value="' + operation_tags + '" onchange="saveOpenAPITags(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;"></td>';
+                                        html += '<td width="20%">';
+                                        html += '<a href="#" onclick="dedupeOpenAPIOperationTags(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">DeDupe</a><br>';
+                                        html += '<a href="#" onclick="compareOpenAPIOperationTagsWithVocabulary(' + i + ',' + j + ',' + "'" + path + "'" + ',' + "'" + verb + "'" + '); return false;">Vocabulary</a>';
+                                        html += '</td>';
+                                        html += '</tr>';   
+                                        
+                                    }                                                                                                                     
+                                }
+                            }
+                            html += '</table>';                                
+
+                            document.getElementById("paths-" + i + "-" + j).innerHTML = html;
+
+                            document.getElementById("alert").innerHTML = "";
+                            }
+
+                        });
+                    })
+                    .catch(function (err) {
+                        if (err == 'TypeError: Failed to fetch') {
+                            document.getElementById("alert").innerHTML = err;
+                        }
+                    });
+                }
+
+                function loadOpenAPIOverlay(i, j, openapi_path, apis_json_url) {
 
                     document.getElementById("alert").innerHTML = "Loading OpenAPI..."
 
-                    //console.log("pulling: " + openapi_path);
-                    //console.log("pulling: " + apis_json_url);
+                    console.log("pulling: " + openapi_path);
+                    console.log("pulling: " + apis_json_url);
 
                     var url = apis_json_url.replace("overlays/apis-io-search.yml", openapi_path);
                     //var url = apis_json_url.replace("apis.md", openapi_path);
                     url = url.replace("properties/", "overlays/");
                     url = url.replace("-openapi-original.yml", "-openapi-search.yml");
 
-                    //console.log("overlay: " + url);
+                    console.log("overlay: " + url);
 
                     const options = {
                         method: 'GET'
@@ -1111,7 +1415,6 @@ width: expand
                                 document.getElementById("alert").innerHTML = err;
                             }
                         });
-
                 }
 
                 function pullTagsFromOpenAPI(i, j, openapi_path, apis_json_url) {
@@ -1227,6 +1530,88 @@ width: expand
                     });
 
                 }
+
+                function saveAPIsJSON() {
+
+                    var github_token = document.getElementById("github_token").value;
+
+                    var apis_json = JSON.parse(document.getElementById("apis_json").value);
+
+                    //console.log(apis_json);
+
+                    var apis_json_url = document.getElementById("include").value;
+                    apis_json_url = apis_json_url.replace("apis.md","overlays/apis-io-search.yml");
+
+                    //console.log("pulling overlay: " + apis_json_url);   
+
+                    var segments = apis_json_url.split("/");
+                    var node = segments[4];
+                    var provider = segments[7];
+
+                    var github_url = 'https://api.github.com/repos/api-search/' + node + '/contents/_apis/' + provider + '/apis.md';
+                    //console.log("github_url: " + github_url);                    
+
+                    const options = {
+                        method: 'get',
+                        headers: {
+                            "Accept": "application/vnd.github+json",
+                            "Authorization": 'Bearer ' + github_token
+                        }
+                    };  
+
+                    fetch(github_url,options)
+                        .then(function(response) {
+                            if (!response.ok) {
+                                console.log('Error with Status Code: ' + response.status);
+                                return;
+                            }
+                            response.json().then(function(data) {   
+
+                                var sha = data.sha;
+                            
+                                var c = {};
+                                c.name = "Kin Lane";
+                                c.email = "kinlane@gmail.com";
+
+                                var m = {};
+                                m.message = 'Saving APIs.json';
+                                m.committer = c;
+                                m.sha = sha;
+
+                                var save_overlay = jsyaml.dump(apis_json);
+                                save_overlay = '---\r\n' + save_overlay + '\r\n---';
+                                //console.log(save_overlay);
+                                m.content = btoa(unescape(encodeURIComponent(save_overlay)));
+
+                                const options = {
+                                    method: 'PUT',
+                                    headers: {
+                                        "Accept": "application/vnd.github+json",
+                                        "Authorization": 'Bearer ' + github_token                                 
+                                    },
+                                    body: JSON.stringify(m)
+                                };  
+
+                                fetch(github_url,options)
+                                    .then(function(response) {
+                                        if (!response.ok) {
+                                            console.log('Error with Status Code: ' + response.status);
+                                            return;
+                                        }
+                                        response.json().then(function(data) {   
+                                            //console.log(data);                                                                           
+                                        });
+                                    })
+                                    .catch(function(err) {
+                                        console.log('Error: ' + err);
+                                }); 
+                            });
+                        })
+                        .catch(function(err) {
+                            console.log('Error: ' + err);
+                    });
+
+                    }                 
 
                 function saveAPIsJSONOverlay() {
 
@@ -1369,20 +1754,22 @@ width: expand
                                         html += '<td width="30%"><input type="text" class="form-control" id="property-url-' + i + '-' + j + '" onchange="saveAPIsJSONPropertyUrl(' + i + ',' + j + ');" value="' + apis_json_overlay.apis[i].properties[j].url + '" style="width: 100%;"></td>';
 
                                         if (apis_json_overlay.apis[i].properties[j].type == 'OpenAPI') {                                   
-                                            html += '<td width="10%" align="center"><a href="#" onclick="loadOpenAPI(' + i + ',' + j + ',' + "'" + apis_json_overlay.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Load</a></td>';
+                                            html += '<td width="10%" align="center"><a href="#" onclick="loadOpenAPIProperty(' + i + ',' + j + ',' + "'" + apis_json_overlay.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Load OpenAPI</a></td>';
+                                            html += '<td width="10%" align="center"><a href="#" onclick="createOpenAPIOverlay(' + i + ',' + j + ',' + "'" + apis_json_overlay.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Create Overlay</a></td>';
+                                            html += '<td width="10%" align="center"><a href="#" onclick="loadOpenAPIOverlay(' + i + ',' + j + ',' + "'" + apis_json_overlay.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Load Overlay</a></td>';                                            
                                             html += '<td width="10%" align="center"><a href="#" onclick="processOpenAPI(' + i + ',' + j + ',' + "'" + apis_json_overlay.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Process</a></td>';
                                             html += '<td width="10%" align="center"><a href="#" onclick="pullTagsFromOpenAPI(' + i + ',' + j + ',' + "'" + apis_json_overlay.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Tags</a></td>';                                            
                                             html += '<td width="10%" align="center"><a href="#" onclick="saveOpenAPI(' + i + ',' + j + ',' + "'" + apis_json_overlay.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Save</a></td>';
                                             html += '<td width="10%" align="center"><a href="#" onclick="resetOpenAPI(' + i + ',' + j + ',' + "'" + apis_json_overlay.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Reset</a></td>';
                                         }
                                         else {
-                                            html += '<td></td>';
+                                            html += '<td colspan="4"></td>';
                                             html += '<td><a href="' + apis_json_overlay.apis[i].properties[j].url + '" target="_blank">View</a></td>';
                                             html += '<td width="10%" align="center"><a href="#" onclick="harvestUrl(' + i + ',' + "'" + apis_json_url + "'" + '); return false;">Harvest</a></td>';
                                         }
 
                                         html += '</tr>';
-                                        html += '<tr><td colspan="5" id="paths-' + i + '-' + j + '"></td></tr>';
+                                        html += '<tr><td colspan="9" id="paths-' + i + '-' + j + '"></td></tr>';
 
                                         }
 
@@ -1737,6 +2124,11 @@ width: expand
 
                     }    
 
+                function viewOnGoogle(i){
+                    var api_name = document.getElementById("name-" + i).value;
+                    window.open("https://www.google.com/search?q="+api_name, "searchTab");
+                }                    
+
                 function manageInclude() {
 
                     document.getElementById("alert").innerHTML = "Parsing Include..."
@@ -1814,7 +2206,7 @@ width: expand
                                     html += '<tr>';
                                     html += '<td width="40%"><h4>Properties</h4></td>';    
                                     html += '<td width="40%"><input type="text" class="form-control" id="search-' + i + '" value="" style="width: 100%;"></td>'; 
-                                    html += '<td width="20%"><button onclick="searchBingforAPIProperties(' + i + '); return false;" type="button" class="btn btn-dark">Search</button><a href="https://www.google.com/search?q=' + api_name + '" target="_blank">Google</td>'; 
+                                    html += '<td width="20%"><button onclick="searchBingforAPIProperties(' + i + '); return false;" type="button" class="btn btn-dark">Search</button><a href="#" onclick="viewOnGoogle(' + i + '); return false;" target="_blank">Google</td>'; 
                                     html += '</tr>';
                                     html += '</table>';
 
