@@ -1,0 +1,156 @@
+---
+layout: page
+width: expand
+---
+
+<div class="container">
+    <div class="row">
+        <div class="col-2"></div>
+        <div class="col">
+            <input type="text" class="form-control" id="github_token" style="display: none;">
+            <input type="text" class="form-control" id="openai_token" style="display: none;">
+            <input type="text" class="form-control" id="bing_token" style="display: none;">
+            <input type="text" class="form-control" id="aws_token" style="display: none;">
+            <script>
+                var github_token = getUrlVar('github_token');
+                if (github_token) {
+                    document.getElementById('github_token').value = github_token;
+                }						              
+                var openai_token = getUrlVar('openai_token');
+                if (openai_token) {
+                    document.getElementById('openai_token').value = openai_token;
+                }		
+                var bing_token = getUrlVar('bing_token');
+                if (bing_token) {
+                    document.getElementById('bing_token').value = bing_token;
+                }	
+                var aws_token = getUrlVar('aws_token');
+                if (aws_token) {
+                    document.getElementById('aws_token').value = aws_token;
+                }	                                				              
+            </script>
+            <h2>APIs.io Network Admin</h2>                      
+            <div id="manage"></div>
+            <script>
+
+                function slugify(str) {
+                    return String(str)
+                        .normalize('NFKD') // split accented characters into their base characters and diacritical marks
+                        .replace(/[\u0300-\u036f]/g, '') // remove all the accents, which happen to be all in the \u03xx UNICODE block.
+                        .trim() // trim leading or trailing whitespace
+                        .toLowerCase() // convert to lowercase
+                        .replace(/[^a-z0-9 -]/g, '-') // remove non-alphanumeric characters
+                        .replace(/\s+/g, '-') // replace spaces with hyphens
+                        .replace(/-+/g, '-'); // remove consecutive hyphens
+                    }   
+
+                // APIs.json Network
+                document.getElementById("alert").innerHTML = "Pulling Search Nodes..."
+
+                var options = {
+                    method: 'GET'
+                };
+
+                fetch('https://explore.apis.io/apis.json', options)
+                    .then(function (response) {
+                        if (!response.ok) {
+                            console.log('Error with Status Code: ' + response.status);
+                        }
+                        response.json().then(function (data) {
+
+                            var html = '<table with="100%">';
+
+                            for (let i = 0; i < data.network.length; i++) {
+
+                                var node_name = data.network[i].name;
+                                var node_slug = slugify(node_name);
+                                var node_url = data.network[i].url;
+                                var node_slug = node_url.replace(".apis.io/apis.json", "");
+                                node_slug = node_slug.replace("https://", "");
+                                //console.log(node_slug);
+                                html += '<tr>';
+                                html += '<td width="70%"><h2>' + node_name + '</h2></td>';
+                                html += '<td width="15%" align="center"><a href="' + node_url.replace("/apis.json","") + '" target="_blank">View Node</a></td>';
+                                html += '<td width="15%" align="center"><a href="' + node_url + '" target="_blank">View APIs.json</a></td>';
+                                html += '</tr>';   
+                                html += '<tr>';
+                                html += '<td colspan="3" id="' + node_slug + '-listing" style="padding: 25px;">' + node_name + '</td>';
+                                html += '</tr>';                                                               
+                            }
+                            html += '</table>';
+                            
+                            document.getElementById("manage").innerHTML = html;
+
+                            document.getElementById("alert").innerHTML = "Parsing Node..."
+
+                            for (let i = 0; i < data.network.length; i++) {
+
+                                var node_name = data.network[i].name;
+                                var node_slug = slugify(node_name);
+                                var node_url = data.network[i].url;
+                                var node_slug = node_url.replace(".apis.io/apis.json", "");
+                                node_slug = node_slug.replace("https://", "");    
+                                getNode(node_url,node_slug);
+                            }
+
+                        });
+                    })
+                    .catch(function (err) {
+                        if (err == 'TypeError: Failed to fetch') {
+                            document.getElementById("alert").innerHTML = err;
+                        }
+                    });
+
+                function getNode(apis_json_url,node_slug){
+       
+                    const options = {
+                        method: 'GET'
+                    };
+
+                    fetch(apis_json_url, options)
+                        .then(function (response) {
+
+                            if (!response.ok) {
+                                console.log('Error with Status Code: ' + response.status);
+                            }
+                            response.text().then(function (yaml) {
+                                
+                                //console.log(yaml);
+
+                                var apis_json = jsyaml.load(yaml);
+
+                                html = '<table with="100%">';
+
+                                for (let i = 0; i < apis_json.includes.length; i++) {
+                                    
+                                    var include_name = apis_json.includes[i].name;
+                                    var include_url = apis_json.includes[i].url;
+                                    var opt = document.createElement('option');
+                                    
+                                    html += '<tr>';
+                                    html += '<td width="70%">' + include_name + '</td>';
+                                    html += '<td width="15%" align="center"><a href="' + include_url + '" target="_blank">View</a></td>';
+                                    html += '</tr>';                                            
+
+                                }
+
+                                html += '</table>';
+
+                                document.getElementById(node_slug + '-listing').innerHTML = html;
+
+                            });
+                        })
+                        .catch(function (err) {
+                            if (err == 'TypeError: Failed to fetch') {
+                                document.getElementById("alert").innerHTML = err;
+                            }
+                        });                      
+                }
+
+                document.getElementById("alert").innerHTML = "";
+               
+            </script>
+        </div>
+        <div class="col-2"></div>
+    </div>
+</div>

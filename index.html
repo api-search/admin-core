@@ -33,9 +33,9 @@ width: expand
             <textarea style="display: none;" id="network" style="width: 100%; height: 100px;"></textarea>
             <textarea style="display: none;" id="vocabulary" style="width: 100%; height: 100px;"></textarea>
             <textarea style="display: none;" id="apis_json" style="width: 100%; height: 100px;"></textarea>
-            <textarea id="apis_json_overlay" style="width: 100%; height: 100px;"></textarea>
-            <textarea id="openapi" style="width: 100%; height: 100px;"></textarea>
-            <textarea id="openapi2" style="width: 100%; height: 100px;"></textarea>
+            <textarea style="display: none;" id="apis_json_overlay" style="width: 100%; height: 100px;"></textarea>
+            <textarea style="display: none;" id="openapi" style="width: 100%; height: 100px;"></textarea>
+            <textarea style="display: none;" id="openapi2" style="width: 100%; height: 100px;"></textarea>
             <table width="100%">
                 <tr>
                     <td align="center">
@@ -207,7 +207,9 @@ width: expand
                         console.log("working: " + working);
 
                         apis_json_overlay.apis[i].name = working;
+                        if(document.getElementById('name-' + i)){
                         document.getElementById('name-' + i).value = working;
+                        }
                                  
                     }
 
@@ -1033,26 +1035,27 @@ width: expand
                 var openapi = JSON.parse(document.getElementById("openapi").value);
                 var github_token = document.getElementById("github_token").value;
 
-                console.log("pulling: " + openapi_path);
-                console.log("pulling: " + apis_json_url);
+                console.log("pulling1: " + openapi_path);
+                console.log("pulling2: " + apis_json_url);
 
-                var url = apis_json_url.replace("overlays/apis-io-search.yml", openapi_path);
-                //var url = apis_json_url.replace("apis.md", openapi_path);
-                url = url.replace("properties/", "overlays/");
-                url = url.replace("-openapi-original.yml", "-openapi-search.yml");
+                var apis_json_overlay_url = apis_json_url.replace("overlays/apis-io-search.yml", openapi_path);
+                apis_json_overlay_url = apis_json_overlay_url.replace("https://raw.githubusercontent.com/","https://api.github.com/repos/");
+                apis_json_overlay_url = apis_json_overlay_url.replace("/main/","/contents/");
+                apis_json_overlay_url = apis_json_overlay_url.replace("properties/", "overlays/");
+                apis_json_overlay_url = apis_json_overlay_url.replace("-openapi-original.yml", "-openapi-search.yml");
 
-                console.log("overlay: " + url);
+                console.log("overlay: " + apis_json_overlay_url);
 
                 const options = {
                     method: 'GET'
                 };
 
-                fetch(url, options)
+                fetch(apis_json_overlay_url, options)
                     .then(function (response) {
 
                         if (!response.ok) {
                             
-                            console.log('Create OpenAPI Overlay: ' + response.status);
+                            console.log('Create OpenAPI Overlay 111: ' + response.status);
                     
                             var c = {};
                             c.name = "Kin Lane";
@@ -1075,14 +1078,14 @@ width: expand
                                 body: JSON.stringify(m)
                             };  
 
-                            fetch(github_property_url,options)
+                            fetch(apis_json_overlay_url,options)
                                 .then(function(response) {
                                     if (!response.ok) {
                                         console.log('Error with Status Code: ' + response.status);
                                         return;
                                     }
                                     response.json().then(function(data) {   
-                                        //console.log(data);                                                                           
+                                        console.log(data);                                                                           
                                     });
                                 })
                                 .catch(function(err) {
@@ -2151,8 +2154,8 @@ width: expand
                                 var html = '';
                                 document.getElementById("manage").innerHTML = html;
 
-                                yaml = yaml.replace("---", "");
-                                yaml = yaml.replace("---", "");
+                                var yaml_array = yaml.split("---");
+                                yaml = yaml_array[1];
                                 var apis_json = jsyaml.load(yaml);
 
                                 var start = document.getElementById("include-start-count").value;
@@ -2162,7 +2165,7 @@ width: expand
 
                                 for (let i = 0; i < apis_json.apis.length; i++) {
                                     
-                                    if(i >= start && i <= end){
+                                    //if(i >= start && i <= end){
                                 
                                     var api_name = apis_json.apis[i].name;
                                     var api_description = apis_json.apis[i].description;
@@ -2212,28 +2215,30 @@ width: expand
 
                                     html += '<table width="100%" id="property-listing-' + i + '">';
 
-                                    for (let j = 0; j < apis_json.apis[i].properties.length; j++) {
+                                    if(apis_json.apis[i].properties){
+                                        for (let j = 0; j < apis_json.apis[i].properties.length; j++) {
 
-                                        html += '<tr>';
-                                        html += '<td width="20%"><input type="text" class="form-control" id="property-type-' + i + '-' + j + '" onchange="saveAPIsJSONPropertyType(' + i + ',' + j + ');" value="' + apis_json.apis[i].properties[j].type + '" style="width: 100%;"></td>';
-                                        html += '<td width="30%"><input type="text" class="form-control" id="property-url-' + i + '-' + j + '" onchange="saveAPIsJSONPropertyUrl(' + i + ',' + j + ');" value="' + apis_json.apis[i].properties[j].url + '" style="width: 100%;"></td>';
+                                            html += '<tr>';
+                                            html += '<td width="20%"><input type="text" class="form-control" id="property-type-' + i + '-' + j + '" onchange="saveAPIsJSONPropertyType(' + i + ',' + j + ');" value="' + apis_json.apis[i].properties[j].type + '" style="width: 100%;"></td>';
+                                            html += '<td width="30%"><input type="text" class="form-control" id="property-url-' + i + '-' + j + '" onchange="saveAPIsJSONPropertyUrl(' + i + ',' + j + ');" value="' + apis_json.apis[i].properties[j].url + '" style="width: 100%;"></td>';
 
-                                        if (apis_json.apis[i].properties[j].type == 'OpenAPI') {
-                                            html += '<td><a href="' + apis_json.apis[i].properties[j].url + '" target="_blank">View</a></td>';
-                                            html += '<td width="10%" align="center"><a href="#" onclick="loadOpenAPI(' + i + ',' + j + ',' + "'" + apis_json.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Load</a></td>';
-                                            html += '<td width="10%" align="center"><a href="#" onclick="pullTagsFromOpenAPI(' + i + ',' + j + ',' + "'" + apis_json.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Tags</a></td>';
-                                            html += '<td width="10%" align="center"><a href="#" onclick="saveOpenAPI(' + i + ',' + j + ',' + "'" + apis_json.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Save</a></td>';
-                                            html += '<td width="10%" align="center"><a href="#" onclick="resetOpenAPI(' + i + ',' + j + ',' + "'" + apis_json.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Reset</a></td>';
+                                            if (apis_json.apis[i].properties[j].type == 'OpenAPI') {
+                                                html += '<td><a href="' + apis_json.apis[i].properties[j].url + '" target="_blank">View</a></td>';
+                                                html += '<td width="10%" align="center"><a href="#" onclick="loadOpenAPI(' + i + ',' + j + ',' + "'" + apis_json.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Load</a></td>';
+                                                html += '<td width="10%" align="center"><a href="#" onclick="pullTagsFromOpenAPI(' + i + ',' + j + ',' + "'" + apis_json.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Tags</a></td>';
+                                                html += '<td width="10%" align="center"><a href="#" onclick="saveOpenAPI(' + i + ',' + j + ',' + "'" + apis_json.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Save</a></td>';
+                                                html += '<td width="10%" align="center"><a href="#" onclick="resetOpenAPI(' + i + ',' + j + ',' + "'" + apis_json.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Reset</a></td>';
+                                            }
+                                            else {
+                                                html += '<td></td>';
+                                                html += '<td width="10%" align="center><a href="' + apis_json.apis[i].properties[j].url + '" target="_blank">View</a></td>';
+                                                html += '<td width="10%" align="center"><a href="#" onclick="harvestUrl(' + i + ',' + "'" + apis_json_url + "'" + '); return false;">Harvest</a></td>';
+                                            }
+
+                                            html += '</tr>';
+                                            html += '<tr><td colspan="5" id="paths-' + i + '-' + j + '"></td></tr>';
+
                                         }
-                                        else {
-                                            html += '<td></td>';
-                                            html += '<td width="10%" align="center><a href="' + apis_json.apis[i].properties[j].url + '" target="_blank">View</a></td>';
-                                            html += '<td width="10%" align="center"><a href="#" onclick="harvestUrl(' + i + ',' + "'" + apis_json_url + "'" + '); return false;">Harvest</a></td>';
-                                        }
-
-                                        html += '</tr>';
-                                        html += '<tr><td colspan="5" id="paths-' + i + '-' + j + '"></td></tr>';
-
                                     }
                                     html += '</table>';
 
@@ -2256,7 +2261,7 @@ width: expand
                                     
                                     document.getElementById("manage").innerHTML = html;
 
-                                    }
+                                    //}
 
                                 }
                                 //console.log(apis_json); 
