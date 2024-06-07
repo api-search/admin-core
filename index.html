@@ -48,12 +48,6 @@ width: expand
                             <option>Select Include</option>
                         </select>
                     </td>
-                    <td align="center" id="include-start" style="display: none;" width="10%">
-                        <input type="text" id="include-start-count" class="form-control" value="0" style="text-align: center; width: 100%;">
-                    </td>  
-                    <td align="center" id="include-end" style="display: none;"" width="10%">
-                        <input type="text" id="include-end-count" class="form-control" value="10" style="text-align: center; width: 100%;">
-                    </td>  
                     <td align="center" id="include-button" style="display: none;"" width="7%">
                         <button onclick="manageInclude(); return false;" type="button" class="btn btn-dark">Load</button>
                     </td>                                                          
@@ -280,10 +274,10 @@ width: expand
                                     document.getElementById("include").appendChild(opt);
                                 }
 
-                                document.getElementById("include-select").style.display = '';
-                                document.getElementById("include-start").style.display = '';
-                                document.getElementById("include-end").style.display = '';
-                                document.getElementById("include-button").style.display = '';
+                                //document.getElementById("include-select").style.display = '';
+                                //document.getElementById("include-start").style.display = '';
+                                //document.getElementById("include-end").style.display = '';
+                                //document.getElementById("include-button").style.display = '';
 
                             });
                         })
@@ -1726,12 +1720,12 @@ width: expand
 
                                 document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
 
-                                var start = document.getElementById("include-start-count").value;
-                                var end = document.getElementById("include-end-count").value;
+                                //var start = document.getElementById("include-start-count").value;
+                                //var end = document.getElementById("include-end-count").value;
 
                                 for (let i = 0; i < apis_json_overlay.apis.length; i++) {
 
-                                    if(i >= start && i <= end){
+                                    ///if(i >= start && i <= end){
              
                                     document.getElementById("name-" + i).value = apis_json_overlay.apis[i].name;
                                     document.getElementById("description-" + i).value = apis_json_overlay.apis[i].description;
@@ -1777,7 +1771,7 @@ width: expand
                                         }
 
                                         document.getElementById("property-listing-" + i).innerHTML = html;
-                                    }
+                                    //}
                                 }
                             });
                         })
@@ -2158,8 +2152,8 @@ width: expand
                                 yaml = yaml_array[1];
                                 var apis_json = jsyaml.load(yaml);
 
-                                var start = document.getElementById("include-start-count").value;
-                                var end = document.getElementById("include-end-count").value;
+                                //var start = document.getElementById("include-start-count").value;
+                                //var end = document.getElementById("include-end-count").value;
 
                                 //console.log(apis_json);
 
