@@ -97,7 +97,7 @@ width: expand
                     }   
 
                 // APIs.json Network
-                document.getElementById("alert").innerHTML = "Pulling Search Nodes..."
+                ////document.getElementById("alert").innerHTML = "Pulling Search Nodes..."
 
                 var options = {
                     method: 'GET'
@@ -130,14 +130,14 @@ width: expand
                     })
                     .catch(function (err) {
                         if (err == 'TypeError: Failed to fetch') {
-                            document.getElementById("alert").innerHTML = err;
+                            ////document.getElementById("alert").innerHTML = err;
                         }
                     });
 
-                document.getElementById("alert").innerHTML = "";
+                //document.getElementById("alert").innerHTML = "";
 
                 // Pulling Vocabulary
-                document.getElementById("alert").innerHTML = "Pulling Vocabulary"
+                //document.getElementById("alert").innerHTML = "Pulling Vocabulary"
 
                 var options = {
                     method: 'GET'
@@ -157,11 +157,11 @@ width: expand
                     })
                     .catch(function (err) {
                         if (err == 'TypeError: Failed to fetch') {
-                            document.getElementById("alert").innerHTML = err;
+                            //document.getElementById("alert").innerHTML = err;
                         }
                     });
 
-                document.getElementById("alert").innerHTML = "";
+                //document.getElementById("alert").innerHTML = "";
 
                 function cleanAPINames(){
 
@@ -239,7 +239,7 @@ width: expand
 
                 function manageNode() {
 
-                    document.getElementById("alert").innerHTML = "Parsing Node..."
+                    //document.getElementById("alert").innerHTML = "Parsing Node..."
 
                     var apis_json_url = document.getElementById("node").value;
 
@@ -292,11 +292,11 @@ width: expand
                         })
                         .catch(function (err) {
                             if (err == 'TypeError: Failed to fetch') {
-                                document.getElementById("alert").innerHTML = err;
+                                //document.getElementById("alert").innerHTML = err;
                             }
                         });
 
-                    document.getElementById("alert").innerHTML = "";
+                    //document.getElementById("alert").innerHTML = "";
                 }
 
                 function parseTagsFromPath(i,j,path,verb){
@@ -445,18 +445,18 @@ width: expand
                 function rollbackOpenAPIDescription(i,j,path,verb) {
 
                     var openapi = JSON.parse(document.getElementById("openapi").value);
-                    document.getElementById("alert").innerHTML = "Writing description"
+                    //document.getElementById("alert").innerHTML = "Writing description"
 
                     document.getElementById("description-" + i + '-' + j + '-' + path + '-' + verb).value = document.getElementById("description2-" + i + '-' + j + '-' + path + '-' + verb).value;
                     openapi.paths[path][verb].description = document.getElementById("description2-" + i + '-' + j + '-' + path + '-' + verb).value;
                     document.getElementById("openapi").value = JSON.stringify(openapi);                     
-                    document.getElementById("alert").innerHTML = "";
+                    //document.getElementById("alert").innerHTML = "";
                     }  
                     
                 function writeOpenAPIDescription(i,j,path,verb) {
 
                     var openapi = JSON.parse(document.getElementById("openapi").value);
-                    document.getElementById("alert").innerHTML = "Writing description"
+                    //document.getElementById("alert").innerHTML = "Writing description"
 
                     var openai_token = document.getElementById("openai_token").value;
 
@@ -503,11 +503,11 @@ width: expand
                         })
                         .catch(function (err) {
                             if (err == 'TypeError: Failed to fetch') {
-                                document.getElementById("alert").innerHTML = err;
+                                //document.getElementById("alert").innerHTML = err;
                             }
                         });
 
-                    document.getElementById("alert").innerHTML = "";
+                    //document.getElementById("alert").innerHTML = "";
                     }                    
 
                     function dedupeAPIsJSONAPITags(i){
@@ -683,7 +683,7 @@ width: expand
 
                 function processOpenAPI(i, j, openapi_path, apis_json_url) {
 
-                    document.getElementById("alert").innerHTML = "Processing OpenAPI..."
+                    //document.getElementById("alert").innerHTML = "Processing OpenAPI..."
                     var openapi = JSON.parse(document.getElementById("openapi").value);
 
                     //console.log(apis_json_overlay);
@@ -1033,7 +1033,7 @@ width: expand
 
             function createOpenAPIOverlay(i, j, openapi_path, apis_json_url) {
 
-                document.getElementById("alert").innerHTML = "Loading OpenAPI...";
+                //document.getElementById("alert").innerHTML = "Loading OpenAPI...";
 
                 var openapi = JSON.parse(document.getElementById("openapi").value);
                 var github_token = document.getElementById("github_token").value;
@@ -1102,7 +1102,7 @@ width: expand
                     })
                     .catch(function (err) {
                         if (err == 'TypeError: Failed to fetch') {
-                            document.getElementById("alert").innerHTML = err;
+                            //document.getElementById("alert").innerHTML = err;
                         }
                     });
 
@@ -1110,7 +1110,7 @@ width: expand
 
             function loadOpenAPIProperty(i, j, openapi_path, apis_json_url) {
 
-                document.getElementById("alert").innerHTML = "Loading OpenAPI..."
+                //document.getElementById("alert").innerHTML = "Loading OpenAPI..."
 
                 console.log("pulling: " + openapi_path);
                 console.log("pulling: " + apis_json_url);
@@ -1255,21 +1255,21 @@ width: expand
 
                             document.getElementById("paths-" + i + "-" + j).innerHTML = html;
 
-                            document.getElementById("alert").innerHTML = "";
+                            //document.getElementById("alert").innerHTML = "";
                             }
 
                         });
                     })
                     .catch(function (err) {
                         if (err == 'TypeError: Failed to fetch') {
-                            document.getElementById("alert").innerHTML = err;
+                            //document.getElementById("alert").innerHTML = err;
                         }
                     });
                 }
 
                 function loadOpenAPIOverlay(i, j, openapi_path, apis_json_url) {
 
-                    document.getElementById("alert").innerHTML = "Loading OpenAPI..."
+                    //document.getElementById("alert").innerHTML = "Loading OpenAPI..."
 
                     console.log("pulling: " + openapi_path);
                     console.log("pulling: " + apis_json_url);
@@ -1411,21 +1411,21 @@ width: expand
 
                                 document.getElementById("paths-" + i + "-" + j).innerHTML = html;
 
-                                document.getElementById("alert").innerHTML = "";
+                                //document.getElementById("alert").innerHTML = "";
                                 }
 
                             });
                         })
                         .catch(function (err) {
                             if (err == 'TypeError: Failed to fetch') {
-                                document.getElementById("alert").innerHTML = err;
+                                //document.getElementById("alert").innerHTML = err;
                             }
                         });
                 }
 
                 function pullTagsFromOpenAPI(i, j, openapi_path, apis_json_url) {
 
-                    document.getElementById("alert").innerHTML = "Pulling Tags From OpenAPI..."
+                    //document.getElementById("alert").innerHTML = "Pulling Tags From OpenAPI..."
                     var openapi = JSON.parse(document.getElementById("openapi").value);
 
                     var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
@@ -1702,7 +1702,7 @@ width: expand
 
                 function manageNodeOverlay() {
 
-                    document.getElementById("alert").innerHTML = "Parsing Overlay Node..."
+                    //document.getElementById("alert").innerHTML = "Parsing Overlay Node..."
 
                     var apis_json_url = document.getElementById("include").value;
                     //console.log("pulling overlay: " + apis_json_url);
@@ -1786,11 +1786,11 @@ width: expand
                         })
                         .catch(function (err) {
                             if (err == 'TypeError: Failed to fetch') {
-                                document.getElementById("alert").innerHTML = err;
+                                //document.getElementById("alert").innerHTML = err;
                             }
                         });
 
-                    document.getElementById("alert").innerHTML = "";
+                    //document.getElementById("alert").innerHTML = "";
                     }  
                     
                 function saveAPIsJSONName(i){
@@ -1866,7 +1866,7 @@ width: expand
                         })
                         .catch(function (err) {
                             if (err == 'TypeError: Failed to fetch') {
-                                document.getElementById("alert").innerHTML = err;
+                                //document.getElementById("alert").innerHTML = err;
                             }
                         });
 
@@ -2024,7 +2024,7 @@ width: expand
                 function writeAPIsJSONDescription(i) {
 
                     var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
-                    document.getElementById("alert").innerHTML = "Writing description"
+                    //document.getElementById("alert").innerHTML = "Writing description"
 
                     var openai_token = document.getElementById("openai_token").value;
 
@@ -2071,11 +2071,11 @@ width: expand
                         })
                         .catch(function (err) {
                             if (err == 'TypeError: Failed to fetch') {
-                                document.getElementById("alert").innerHTML = err;
+                                //document.getElementById("alert").innerHTML = err;
                             }
                         });
 
-                    document.getElementById("alert").innerHTML = "";
+                    //document.getElementById("alert").innerHTML = "";
                     }       
                     
                 function searchBingforAPIProperties(i){
@@ -2137,7 +2137,7 @@ width: expand
 
                 function manageInclude() {
 
-                    document.getElementById("alert").innerHTML = "Parsing Include..."
+                    //document.getElementById("alert").innerHTML = "Parsing Include..."
 
                     var apis_json_url = document.getElementById("include").value;
                     //console.log("pulling1: " + apis_json_url);
@@ -2277,11 +2277,11 @@ width: expand
                         })
                         .catch(function (err) {
                             if (err == 'TypeError: Failed to fetch') {
-                                document.getElementById("alert").innerHTML = err;
+                                //document.getElementById("alert").innerHTML = err;
                             }
                         });
 
-                    document.getElementById("alert").innerHTML = "";
+                    //document.getElementById("alert").innerHTML = "";
                 }                
             </script>
         </div>
