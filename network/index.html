@@ -52,7 +52,7 @@ width: expand
                     }   
 
                 // APIs.json Network
-                document.getElementById("alert").innerHTML = "Pulling Search Nodes..."
+                //document.getElementById("alert").innerHTML = "Pulling Search Nodes..."
 
                 var options = {
                     method: 'GET'
@@ -93,7 +93,7 @@ width: expand
                             
                             document.getElementById("manage").innerHTML = html;
 
-                            document.getElementById("alert").innerHTML = "Parsing Node..."
+                            //document.getElementById("alert").innerHTML = "Parsing Node..."
 
                             for (let i = 0; i < data.network.length; i++) {
 
@@ -109,7 +109,7 @@ width: expand
                     })
                     .catch(function (err) {
                         if (err == 'TypeError: Failed to fetch') {
-                            document.getElementById("alert").innerHTML = err;
+                            //document.getElementById("alert").innerHTML = err;
                         }
                     });
 
@@ -167,6 +167,7 @@ width: expand
                                                 var yaml_array = yaml.split("---");
                                                 yaml_raw = yaml_array[1];
                                                 var apis_json = jsyaml.load(yaml_raw);
+
                                                 if(apis_json.apis){
                                                     var api_count = apis_json.apis.length;
                                                 }
@@ -183,7 +184,7 @@ width: expand
                                         })
                                         .catch(function (err) {
                                             if (err == 'TypeError: Failed to fetch') {
-                                                document.getElementById("alert").innerHTML = err;
+                                                //document.getElementById("alert").innerHTML = err;
                                             }
                                         });                                      
 
@@ -197,12 +198,12 @@ width: expand
                         })
                         .catch(function (err) {
                             if (err == 'TypeError: Failed to fetch') {
-                                document.getElementById("alert").innerHTML = err;
+                                //document.getElementById("alert").innerHTML = err;
                             }
                         });                      
                 }
 
-                document.getElementById("alert").innerHTML = "";
+                //document.getElementById("alert").innerHTML = "";
                
             </script>
         </div>
