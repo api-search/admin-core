@@ -29,7 +29,14 @@ width: expand
                     document.getElementById('aws_token').value = aws_token;
                 }	                                				              
             </script>
-            <h2>APIs.io Network Admin</h2>                      
+            <h2>APIs.io Network Admin</h2>   
+            <table width="100%">
+                <tr>
+                    <td>Total Networks:<input type="text" id="total_networks" width="25" style="text-align: center;" value="0"></td>
+                    <td>Total Providers: <input type="text" id="total_providers" width="25" style="text-align: center;" value="0"></td>
+                    <td>Total APIs: <input type="text" id="total_apis" width="25" style="text-align: center;" value="0"></td>
+                </tr>
+            </table>                   
             <div id="manage"></div>
             <script>
 
@@ -61,6 +68,11 @@ width: expand
                             var html = '<table with="100%">';
 
                             for (let i = 0; i < data.network.length; i++) {
+
+                                var total_networks = document.getElementById("total_networks").value;
+                                total_networks = total_networks - 0;
+                                total_networks = total_networks + 1;
+                                document.getElementById("total_networks").value = total_networks;
 
                                 var node_name = data.network[i].name;
                                 var node_slug = slugify(node_name);
@@ -122,15 +134,58 @@ width: expand
                                 html = '<table with="100%">';
 
                                 for (let i = 0; i < apis_json.includes.length; i++) {
-                                    
+
+                                    var total_providers = document.getElementById("total_providers").value;
+                                    total_providers = total_providers - 0;
+                                    total_providers = total_providers + 1;
+                                    document.getElementById("total_providers").value = total_providers;   
+
                                     var include_name = apis_json.includes[i].name;
                                     var include_url = apis_json.includes[i].url;
+                                    //console.log(include_url);
                                     var opt = document.createElement('option');
                                     
                                     html += '<tr>';
                                     html += '<td width="70%">' + include_name + '</td>';
                                     html += '<td width="15%" align="center"><a href="' + include_url + '" target="_blank">View</a></td>';
-                                    html += '</tr>';                                            
+                                    html += '</tr>';    
+                                    
+                                    const options2 = {
+                                        method: 'GET'
+                                    };
+
+                                    fetch(include_url, options2)
+                                        .then(function (response) {
+
+                                            if (!response.ok) {
+                                                console.log('Error with Status Code: ' + response.status);
+                                            }
+                                            response.text().then(function (yaml) {
+                                                
+                                                //console.log(yaml);
+
+                                                var yaml_array = yaml.split("---");
+                                                yaml_raw = yaml_array[1];
+                                                var apis_json = jsyaml.load(yaml_raw);
+                                                if(apis_json.apis){
+                                                    var api_count = apis_json.apis.length;
+                                                }
+                                                else{
+                                                    var api_count = 1;
+                                                }
+
+                                                var total_apis = document.getElementById("total_apis").value;
+                                                total_apis = total_apis - 0;
+                                                total_apis = total_apis + api_count;
+                                                document.getElementById("total_apis").value = total_apis;   
+
+                                            });
+                                        })
+                                        .catch(function (err) {
+                                            if (err == 'TypeError: Failed to fetch') {
+                                                document.getElementById("alert").innerHTML = err;
+                                            }
+                                        });                                      
 
                                 }
 
