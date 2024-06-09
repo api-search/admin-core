@@ -2703,7 +2703,7 @@ Ipset: '~'
 Ipversion: IP Versions
 Iqi: '~'
 Iquestionnaires: ''
-Is: ''
+Is: '~'
 Iso: ISO
 Issu: Issues
 Issue: Issues
@@ -3255,7 +3255,7 @@ Milestone: Milestones
 Milestoneid: Milestone Identifier
 Milestonenumber: Milestone Numbers
 Milestones: ''
-Million: ''
+Million: '~'
 Minilm: '~'
 Minimums: ''
 Minute: ''
@@ -3322,7 +3322,7 @@ Month,: Months
 Month.: Months
 Months,: Months
 Months.: Months
-More: ''
+More: '~'
 Most: ''
 Mount: ''
 Move: ''
@@ -6292,3 +6292,6 @@ Entifier: '~'
 (deprecated): '~'
 (v3): '~'
 (v4): '~'
+Le: '~'
+MUR: '~'
+MB: '~'
