@@ -31,17 +31,31 @@ width: expand
             </script>
             <h2>APIs.io Network Admin</h2>   
             <br>
-            <textarea id="network_tags" style="width: 100%; height: 100px;"></textarea>
-            <textarea id="vocabulary" style="width: 100%; height: 100px;"></textarea>
+            <div id="tag_bucket"></div>            
+            <textarea style="display: none;" id="vocabulary" style="width: 100%; height: 100px;"></textarea>
             <table width="100%">
                 <tr>
                     <td align="center">Total Networks:<input type="text" id="total_networks" width="35" style="text-align: left; border: 1px solid #FFF;" value="0"></td>
                     <td align="center">Total Providers: <input type="text" id="total_providers" width="35" style="text-align: left; border: 1px solid #FFF;" value="0"></td>
                     <td align="center">Total APIs: <input type="text" id="total_apis" width="35" style="text-align: left; border: 1px solid #FFF;" value="0"></td>
                 </tr>
-            </table>                   
+            </table>   
+            <table width="100%">
+                <tr>
+                    <td align="center">
+                        <button id="vocabulary_button" onclick="saveVocabulary(); return false;" type="button" class="btn btn-dark">Save Vocabulary</button>
+                    </td>                   
+                </tr>
+            </table>                              
             <div id="manage"></div>
             <script>
+
+                function formatDate(date) {
+                    var year = date.getFullYear().toString();
+                    var month = (date.getMonth() + 101).toString().substring(1);
+                    var day = (date.getDate() + 100).toString().substring(1);
+                    return year + "-" + month + "-" + day;
+                }
 
                 function slugify(str) {
                     return String(str)
@@ -53,6 +67,31 @@ width: expand
                         .replace(/\s+/g, '-') // replace spaces with hyphens
                         .replace(/-+/g, '-'); // remove consecutive hyphens
                     }   
+
+                // Pulling Vocabulary
+                //document.getElementById("alert").innerHTML = "Pulling Vocabulary"
+
+                var options = {
+                    method: 'GET'
+                };
+
+                fetch('https://raw.githubusercontent.com/api-search/admin/main/vocabulary.yml', options)
+                    .then(function (response) {
+                        if (!response.ok) {
+                            console.log('Error with Status Code: ' + response.status);
+                        }
+                        response.text().then(function (yaml) {
+
+                            var vocabulary = jsyaml.load(yaml);
+                            document.getElementById("vocabulary").value = JSON.stringify(vocabulary);
+
+                        });
+                    })
+                    .catch(function (err) {
+                        if (err == 'TypeError: Failed to fetch') {
+                            //document.getElementById("alert").innerHTML = err;
+                        }
+                    });
 
                 // APIs.json Network
                 //document.getElementById("alert").innerHTML = "Pulling Search Nodes..."
@@ -82,6 +121,11 @@ width: expand
                                 var node_url = data.network[i].url;
                                 var node_slug = node_url.replace(".apis.io/apis.json", "");
                                 node_slug = node_slug.replace("https://", "");
+
+                                var tag_bucket = document.getElementById("tag_bucket").innerHTML;
+                                tag_bucket += '<textarea style="display: none;" id="' + node_slug + '_tags" style="width: 100%; height: 100px;">[]</textarea>';
+                                document.getElementById("tag_bucket").innerHTML = tag_bucket;
+
                                 //console.log(node_slug);
                                 html += '<tr>';
                                 html += '<td width="70%"><h2>' + node_name + '</h2></td>';
@@ -89,7 +133,7 @@ width: expand
                                 html += '<td width="15%" align="center"><a href="' + node_url + '" target="_blank">View APIs.json</a></td>';
                                 html += '</tr>';   
                                 html += '<tr>';
-                                html += '<td colspan="3" id="' + node_slug + '-listing" style="padding: 25px;">' + node_name + '</td>';
+                                html += '<td colspan="3" style="padding: 25px;"><div style="height: 500px; overflow: auto;" id="' + node_slug + '-listing"></div></td>';
                                 html += '</tr>';                                                               
                             }
                             html += '</table>';
@@ -145,13 +189,17 @@ width: expand
 
                                     var include_name = apis_json.includes[i].name;
                                     var include_url = apis_json.includes[i].url;
-                                    //console.log(include_url);
-                                    var opt = document.createElement('option');
                                     
-                                    html += '<tr>';
-                                    html += '<td width="70%">' + include_name + '</td>';
-                                    html += '<td width="15%" align="center"><a href="' + include_url + '" target="_blank">View</a></td>';
-                                    html += '</tr>';    
+                                    //console.log(include_url);
+
+                                    include_url = include_url.replace("/apis.md","/overlays/apis-io-search.yml")
+              
+                                    //console.log(include_url);
+
+                                    //html += '<tr>';
+                                    //html += '<td width="70%">' + include_name + '</td>';
+                                    //html += '<td width="15%" align="center"><a href="' + include_url + '" target="_blank">View</a></td>';
+                                    //html += '</tr>';    
                                     
                                     const options2 = {
                                         method: 'GET'
@@ -167,21 +215,54 @@ width: expand
                                                 
                                                 //console.log(yaml);
 
-                                                var yaml_array = yaml.split("---");
-                                                yaml_raw = yaml_array[1];
-                                                var apis_json = jsyaml.load(yaml_raw);
+                                                //var yaml_array = yaml.split("---");
+                                                //yaml_raw = yaml_array[1];
+                                                var apis_json = jsyaml.load(yaml);
+                                                //console.log(apis_json);
 
-                                                if(apis_json.apis){
-                                                    var api_count = apis_json.apis.length;
-                                                }
-                                                else{
-                                                    var api_count = 1;
-                                                }
+                                                if(apis_json){
+                                                    
+                                                    //console.log(include_url);
+                                                    //console.log("1) " + apis_json.name);
 
-                                                var total_apis = document.getElementById("total_apis").value;
-                                                total_apis = total_apis - 0;
-                                                total_apis = total_apis + api_count;
-                                                document.getElementById("total_apis").value = total_apis;   
+                                                    if(apis_json.apis){
+                                                        var api_count = apis_json.apis.length;
+                                                    }
+                                                    else{
+                                                        var api_count = 1;
+                                                    }
+
+                                                    var total_apis = document.getElementById("total_apis").value;
+                                                    total_apis = total_apis - 0;
+                                                    total_apis = total_apis + api_count;
+                                                    document.getElementById("total_apis").value = total_apis; 
+
+                                                    var network_tags = [];
+                                                    
+                                                    if(apis_json.apis){
+                                                        for (let i = 0; i < apis_json.apis.length; i++) {
+                                                            if(apis_json.apis[i].tags){
+                                                                //console.log("2) " + apis_json.apis[i].name);
+                                                                for (let j = 0; j < apis_json.apis[i].tags.length; j++) {
+                                                                    var already = 0;
+                                                                    //console.log("3) " + apis_json.apis[i].tags[j]);
+                                                                    for (let k = 0; k < network_tags.length; k++) {
+                                                                        if(network_tags[k] == apis_json.apis[i].tags[j]){
+                                                                            already = 1;
+                                                                        }
+                                                                    }
+                                                                    if(already == 0){
+                                                                        network_tags.push(apis_json.apis[i].tags[j].trim());
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                    network_tags.sort();
+                                                    document.getElementById(node_slug + '_tags').value = JSON.stringify(network_tags);
+                                                    compareWithVocabulary(node_slug);
+                                                    listTags(node_slug);
+                                                }
 
                                             });
                                         })
@@ -193,9 +274,9 @@ width: expand
 
                                 }
 
-                                html += '</table>';
+                                //html += '</table>';
 
-                                document.getElementById(node_slug + '-listing').innerHTML = html;
+                                //document.getElementById(node_slug + '-listing').innerHTML = html;
 
                             });
                         })
@@ -205,6 +286,277 @@ width: expand
                             }
                         });                      
                 }
+
+            function saveVocabulary() {
+
+                var vocabulary = JSON.parse(document.getElementById("vocabulary").value);
+                var github_url = 'https://api.github.com/repos/api-search/admin/contents/vocabulary.yml';
+                //console.log("github_url: " + github_url);                    
+
+                const options = {
+                    method: 'get',
+                    headers: {
+                        "Accept": "application/vnd.github+json",
+                        "Authorization": 'Bearer ' + github_token
+                    }
+                };  
+
+                fetch(github_url,options)
+                    .then(function(response) {
+                        if (!response.ok) {
+                            console.log('Error with Status Code: ' + response.status);
+                            return;
+                        }
+                        response.json().then(function(data) {   
+
+                            var sha = data.sha;
+                        
+                            var c = {};
+                            c.name = "Kin Lane";
+                            c.email = "kinlane@gmail.com";
+
+                            var m = {};
+                            m.message = 'Saving OpenAPI Overlay';
+                            m.committer = c;
+                            m.sha = sha;
+                            var save_vocabulary = jsyaml.dump(vocabulary);
+                            m.content = btoa(unescape(encodeURIComponent(save_vocabulary)));
+
+                            const options = {
+                                method: 'PUT',
+                                headers: {
+                                    "Accept": "application/vnd.github+json",
+                                    "Authorization": 'Bearer ' + github_token                                 
+                                },
+                                body: JSON.stringify(m)
+                            };  
+
+                            fetch(github_url,options)
+                                .then(function(response) {
+                                    if (!response.ok) {
+                                        console.log('Error with Status Code: ' + response.status);
+                                        return;
+                                    }
+                                    response.json().then(function(data) {   
+                                        //console.log(data);   
+                                        document.getElementById('vocabulary_button').style.color = "#00FF00";                                                                        
+                                    });
+                                })
+                                .catch(function(err) {
+                                    console.log('Error: ' + err);
+                            }); 
+                        });
+                    })
+                    .catch(function(err) {
+                        console.log('Error: ' + err);
+                });
+
+                }                
+
+            function removeVocab(tag,node_slug,i){
+
+                var vocabulary = JSON.parse(document.getElementById("vocabulary").value);
+                vocabulary[tag] = "~";
+                document.getElementById("vocabulary").value = JSON.stringify(vocabulary);
+                document.getElementById(node_slug + '_' + i + '_remove_vocab').style.color = "#00FF00";
+                }   
+
+            function translateVocab(tag,node_slug,i){
+
+                var vocabulary = JSON.parse(document.getElementById("vocabulary").value);
+                console.log(node_slug + '_' + i + '_translate');
+                vocabulary[tag] = document.getElementById(node_slug + '_' + i + '_translate').value;
+                document.getElementById("vocabulary").value = JSON.stringify(vocabulary);
+                document.getElementById(node_slug + '_' + i + '_translate_vocab').style.color = "#00FF00";
+                }                                                 
+
+            function buildNodeTag(tag,node_slug,i){          
+
+                var tag_slug = slugify(tag);
+                var vocabulary = JSON.parse(document.getElementById("vocabulary").value);
+                var github_url = 'https://api.github.com/repos/api-search/' + node_slug + '/contents/tags/' + tag_slug + '.yml';
+                console.log("github_url: " + github_url);                    
+
+                var tag_file = {};
+                tag_file.name = tag;
+                tag_file.description = 'Needs a description.';
+                tag_file.https = 'https://kinlane-productions2.s3.amazonaws.com/apis-json-icons/' + tag_slug + '.png';
+                tag_file.url = 'https://raw.githubusercontent.com/api-search/' + node_slug + '/main/_tags/' + tag_slug + '.md';
+                tag_file.created = formatDate(new Date());
+                tag_file.modified = formatDate(new Date());
+                tag_file.description = '0.18';
+                tag_file.tags = [tag];
+
+                const options = {
+                    method: 'get',
+                    headers: {
+                        "Accept": "application/vnd.github+json",
+                        "Authorization": 'Bearer ' + github_token
+                    }
+                };  
+
+                fetch(github_url,options)
+                    .then(function(response) {
+                        if (!response.ok) {
+                            
+                            console.log('Creating New Tag Page: ' + tag);
+
+                            var c = {};
+                            c.name = "Kin Lane";
+                            c.email = "kinlane@gmail.com";
+
+                            var m = {};
+                            m.message = 'Add Tag';
+                            m.committer = c;
+                            var save_vocabulary = jsyaml.dump(tag);
+                            m.content = btoa(unescape(encodeURIComponent(tag_file)));
+
+                            const options = {
+                                method: 'PUT',
+                                headers: {
+                                    "Accept": "application/vnd.github+json",
+                                    "Authorization": 'Bearer ' + github_token                                 
+                                },
+                                body: JSON.stringify(m)
+                            };  
+
+                            fetch(github_url,options)
+                                .then(function(response) {
+                                    if (!response.ok) {
+                                        console.log('Error with Status Code: ' + response.status);
+                                        return;
+                                    }
+                                    response.json().then(function(data) {   
+                                        //console.log(data);   
+                                        document.getElementById(node_slug + '_' + i + '_build_tag_page').style.color = "#00FF00";                                                                        
+                                    });
+                                })
+                                .catch(function(err) {
+                                    console.log('Error: ' + err);
+                            });                             
+
+                            return;
+                        }
+                        response.json().then(function(data) {   
+
+                            var sha = data.sha;
+                        
+                            var c = {};
+                            c.name = "Kin Lane";
+                            c.email = "kinlane@gmail.com";
+
+                            var m = {};
+                            m.message = 'Update Tag';
+                            m.committer = c;
+                            m.sha = sha;
+                            var save_vocabulary = jsyaml.dump(tag);
+                            m.content = btoa(unescape(encodeURIComponent(save_vocabulary)));
+
+                            const options = {
+                                method: 'PUT',
+                                headers: {
+                                    "Accept": "application/vnd.github+json",
+                                    "Authorization": 'Bearer ' + github_token                                 
+                                },
+                                body: JSON.stringify(m)
+                            };  
+
+                            fetch(github_url,options)
+                                .then(function(response) {
+                                    if (!response.ok) {
+                                        console.log('Error with Status Code: ' + response.status);
+                                        return;
+                                    }
+                                    response.json().then(function(data) {   
+                                        //console.log(data);   
+                                        document.getElementById(node_slug + '_' + i + '_build_tag_page').style.color = "#00FF00";                                                                        
+                                    });
+                                })
+                                .catch(function(err) {
+                                    console.log('Error: ' + err);
+                            }); 
+                        });
+                    })
+                    .catch(function(err) {
+                        console.log('Error: ' + err);
+                });
+
+                }                   
+
+            function listTags(node_slug){
+                var html = '<table width="100%">';
+                var network_tags = JSON.parse(document.getElementById(node_slug + "_tags").value);
+                for (let i = 0; i < network_tags.length; i++) {
+                    html += '<tr>';
+                    html += '<td>' + network_tags[i] + '</td>';
+                    
+                    // Remove in Vocab
+                    html += '<td align="center"><button id="' + node_slug + '_' + i + '_remove_vocab" onclick="removeVocab(' + "'" + network_tags[i] + "'" + ',' + "'" + node_slug + "'" + ',' + i + '); return false;" type="button" class="btn btn-dark">Remove</button></td>';
+
+                    // Translate in Vocab
+                    html += '<td align="center">';
+                    html += '<input style="margin-right: 5px;" type="text" id="' + node_slug + '_' + i + '_translate" value="">';
+                    html += '<button id="' + node_slug + '_' + i + '_translate_vocab" onclick="translateVocab(' + "'" + network_tags[i] + "'" + ',' + "'" + node_slug + "'" + ',' + i + '); return false;" type="button" class="btn btn-dark">Translate</button>';
+                    html += '</td>';
+
+                    // Build in Node
+                    html += '<td align="center"><button id="' + node_slug + '_' + i + '_build_tag_page" onclick="buildNodeTag(' + "'" + network_tags[i] + "'" + ',' + "'" + node_slug + "'" + ',' + i + '); return false;" type="button" class="btn btn-dark">Build</button></td>';
+
+                    html += '</tr>';                      
+                }
+                html += '</table>';
+                //console.log(node_slug);
+                document.getElementById(node_slug + '-listing').innerHTML = html; 
+
+            }
+
+            function compareWithVocabulary(node_slug){
+
+                var network_tags = JSON.parse(document.getElementById(node_slug + "_tags").value);
+                //console.log("Tags: " + network_tags.length);
+                var vocabulary = JSON.parse(document.getElementById("vocabulary").value);
+
+                var tag_new = [];
+
+                for (let m = 0; m < network_tags.length; m++) {
+                    var in_vocabulary = 0;
+                    for (const [word, value] of Object.entries(vocabulary)) {                            
+                        if(word == network_tags[m]){
+                            in_vocabulary = 1;
+                            if(value){                                    
+                                if(value == "~"){
+                                    //console.log(network_tags[m] + " is removed");
+                                }                          
+                                else{
+                                    if(value.length > 0){
+                                        this_tag = value;
+                                        this_tag = this_tag.trim();
+                                        tag_new.push(this_tag);
+                                    } 
+                                }
+                            }
+                            else{
+                                this_tag = network_tags[m];
+                                if(this_tag && this_tag.length > 0){
+                                    this_tag = this_tag.trim();
+                                    tag_new.push(this_tag);
+                                    }
+                                }                                
+                        }   
+                    }
+                    if(in_vocabulary == 0){
+                        this_tag = network_tags[m];
+                        if(this_tag && this_tag.length > 0){
+                            this_tag = this_tag.trim();
+                            tag_new.push(this_tag); 
+                        }
+                    }
+                }   
+
+                //console.log("Tags: " + tag_new.length);
+                document.getElementById(node_slug + "_tags").value = JSON.stringify(tag_new);
+
+                }                   
 
                 //document.getElementById("alert").innerHTML = "";
                

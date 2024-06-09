@@ -144,7 +144,8 @@ width: expand
                                     var include_name = apis_json.includes[i].name;
                                     var include_url = apis_json.includes[i].url;
                                     //console.log(include_url);
-                                    var opt = document.createElement('option');
+                                    
+                                    include_url = include_url.replace("/apis.md","/overlays/apis-io-search.yml")
                                     
                                     html += '<tr>';
                                     html += '<td width="70%">' + include_name + '</td>';
@@ -165,9 +166,9 @@ width: expand
                                                 
                                                 //console.log(yaml);
 
-                                                var yaml_array = yaml.split("---");
-                                                yaml_raw = yaml_array[1];
-                                                var apis_json = jsyaml.load(yaml_raw);
+                                                //var yaml_array = yaml.split("---");
+                                                //yaml_raw = yaml_array[1];
+                                                var apis_json = jsyaml.load(yaml);
 
                                                 if(apis_json.apis){
                                                     var api_count = apis_json.apis.length;
