@@ -2583,7 +2583,7 @@ Inputs: ''
 Inquiries: ''
 Inquiry: Inquiries
 Ins: '~'
-Insert: ''
+Insert: '~'
 Insight: Insights
 Insight Preference Data: ''
 Insight Preference Date: ''
@@ -6421,3 +6421,8 @@ Wfs: '~'
 '@hf/thebloke/orca 2 13b Awq': '~'
 '@hf/thebloke/starling Lm 7b Alpha Awq': '~'
 '@hf/thebloke/zephyr 7b Beta Awq': '~'
+A2p: '~'
+Eo: '~'
+Esim: ESIM
+Eos: '~'
+Playlist: Playlists
