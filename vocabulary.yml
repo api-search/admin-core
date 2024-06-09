@@ -491,7 +491,7 @@ Authenticate: ''
 Authenticate.: Authenticate
 Authenticated: ''
 Authenticated Origin Pulls: ''
-Authenticated User: ''
+Authenticated User: Authenticated
 Authentication: ''
 Authori: Authorization
 Authorisation: Authorization
@@ -1110,7 +1110,7 @@ Commentid: Comment Identifier
 Commentnumber: Comment Number
 Comments: ''
 Commerce: ''
-Commit: ''
+Commit: Commits
 Commit Statuses: ''
 Commitactivity: Commit Activity
 Commits: ''
@@ -6426,3 +6426,10 @@ Eo: '~'
 Esim: ESIM
 Eos: '~'
 Playlist: Playlists
+(Legacy): '~'
+(SBOM): '~'
+(tar): TAR
+(using: '~'
+(zip): ZIP
+Auto Link: Auto Links
+CODEOWNERS: '~'
