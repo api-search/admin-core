@@ -14,6 +14,8 @@
 '50': '~'
 '64': '~'
 '100': '~'
+'404': '~'
+'500': '~'
 '512': '~'
 '2012': '~'
 '2013': '~'
@@ -271,7 +273,7 @@ Allowedextensions: Allowed Extensions
 Allowedoriginscompanylevel: ''
 Allowedoriginsmerchantlevel: ''
 Allows: ''
-Along: ''
+Along: '~'
 Alpha: ''
 Alternate: ''
 Alternative: Alternatives
@@ -629,7 +631,7 @@ Beam: ''
 Been: '~'
 Before: '~'
 Begin: Begins
-Begins: ''
+Begins: '~'
 Behalf: ''
 Behavior: ''
 Behaviors: ''
@@ -2703,7 +2705,7 @@ Ipset: '~'
 Ipversion: IP Versions
 Iqi: '~'
 Iquestionnaires: ''
-Is: '~'
+Is: ''
 Iso: ISO
 Issu: Issues
 Issue: Issues
@@ -3255,7 +3257,7 @@ Milestone: Milestones
 Milestoneid: Milestone Identifier
 Milestonenumber: Milestone Numbers
 Milestones: ''
-Million: '~'
+Million: ''
 Minilm: '~'
 Minimums: ''
 Minute: ''
@@ -3322,7 +3324,7 @@ Month,: Months
 Month.: Months
 Months,: Months
 Months.: Months
-More: '~'
+More: ''
 Most: ''
 Mount: ''
 Move: ''
@@ -6292,6 +6294,12 @@ Entifier: '~'
 (deprecated): '~'
 (v3): '~'
 (v4): '~'
-Le: '~'
-MUR: '~'
-MB: '~'
+(400: '~'
+(400),: '~'
+(404: '~'
+(404),: '~'
+(409),: '~'
+Additionally,: '~'
+Already: '~'
+Bad: '~'
+Being: '~'
