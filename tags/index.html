@@ -374,7 +374,7 @@ width: expand
 
                 var tag_slug = slugify(tag);
                 var vocabulary = JSON.parse(document.getElementById("vocabulary").value);
-                var github_url = 'https://api.github.com/repos/api-search/' + node_slug + '/contents/tags/' + tag_slug + '.yml';
+                var github_url = 'https://api.github.com/repos/api-search/' + node_slug + '/contents/_tags/' + tag_slug + '.yml';
                 console.log("github_url: " + github_url);                    
 
                 var tag_file = {};
@@ -408,8 +408,8 @@ width: expand
                             var m = {};
                             m.message = 'Add Tag';
                             m.committer = c;
-                            var save_vocabulary = jsyaml.dump(tag);
-                            m.content = btoa(unescape(encodeURIComponent(tag_file)));
+                            var save_vocabulary = jsyaml.dump(tag_file);
+                            m.content = btoa(unescape(encodeURIComponent(save_vocabulary)));
 
                             const options = {
                                 method: 'PUT',
