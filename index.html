@@ -712,7 +712,7 @@ width: expand
 
                 function writeOpenAPIOverlay(node,provider,base_overlay_file_name,openapi_template,github_token,openapi_template){
 
-                    github_overlay_url = 'https://api.github.com/repos/api-search/' + node + '/contents/_apis/' + provider + '/overlays/' + provider + '-' + base_overlay_file_name;
+                    github_overlay_url = 'https://api.github.com/repos/api-search/' + node + '/contents/_data/' + provider + '/overlays/' + provider + '-' + base_overlay_file_name;
                     
                     console.log("github_url: " + github_overlay_url);                    
 
@@ -814,7 +814,7 @@ width: expand
 
                 function writeOpenAPIProperty(node,provider,base_overlay_file_name,base_openapi_file_name,github_token,openapi_template){
 
-                    var github_property_url = 'https://api.github.com/repos/api-search/' + node + '/contents/_apis/' + provider + '/properties/' + provider + '-' + base_openapi_file_name;
+                    var github_property_url = 'https://api.github.com/repos/api-search/' + node + '/contents/_data/' + provider + '/properties/' + provider + '-' + base_openapi_file_name;
                     
                     console.log("github_url: " + github_property_url);                    
 
@@ -1475,7 +1475,7 @@ width: expand
                     var overlay = openapi_path.replace("properties/","overlays/");
                     overlay = overlay.replace("-openapi-original.yml", "-openapi-search.yml");
 
-                    var github_url = 'https://api.github.com/repos/api-search/' + node + '/contents/_apis/' + provider + '/' + overlay;
+                    var github_url = 'https://api.github.com/repos/api-search/' + node + '/contents/_data/' + provider + '/' + overlay;
                     //console.log("github_url: " + github_url);                    
 
                     const options = {
@@ -1636,7 +1636,7 @@ width: expand
                     var node = segments[4];
                     var provider = segments[7];
 
-                    var github_url = 'https://api.github.com/repos/api-search/' + node + '/contents/_apis/' + provider + '/overlays/apis-io-search.yml';
+                    var github_url = 'https://api.github.com/repos/api-search/' + node + '/contents/_data/' + provider + '/overlays/apis-io-search.yml';
                     //console.log("github_url: " + github_url);                    
 
                     const options = {
