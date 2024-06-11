@@ -237,7 +237,7 @@ width: expand
                                                     total_apis = total_apis + api_count;
                                                     document.getElementById("total_apis").value = total_apis; 
 
-                                                    var network_tags = [];
+                                                    var network_tags = JSON.parse(document.getElementById(node_slug + '_tags').value);
                                                     
                                                     if(apis_json.apis){
                                                         for (let i = 0; i < apis_json.apis.length; i++) {
@@ -505,7 +505,7 @@ width: expand
                     html += '</tr>';                      
                 }
                 html += '</table>';
-                //console.log(node_slug);
+                console.log(node_slug);
                 document.getElementById(node_slug + '-listing').innerHTML = html; 
 
             }
