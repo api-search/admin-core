@@ -1753,6 +1753,7 @@ width: expand
                                         apis_json_overlay.apis[i].properties = apis_json.apis[i].properties; 
                                     }
 
+                                    if(apis_json_overlay.apis[i].properties){
                                     for (let j = 0; j < apis_json_overlay.apis[i].properties.length; j++) {
 
                                         html += '<tr>';
@@ -1780,7 +1781,7 @@ width: expand
                                         }
 
                                         document.getElementById("property-listing-" + i).innerHTML = html;
-                                    //}
+                                    }
                                 }
                             });
                         })
@@ -2140,7 +2141,7 @@ width: expand
                     //document.getElementById("alert").innerHTML = "Parsing Include..."
 
                     var apis_json_url = document.getElementById("include").value;
-                    //console.log("pulling1: " + apis_json_url);
+                    console.log("pulling1: " + apis_json_url);
 
                     const options = {
                         method: 'GET'
@@ -2156,9 +2157,6 @@ width: expand
 
                                 var html = '';
                                 document.getElementById("manage").innerHTML = html;
-
-                                var yaml_array = yaml.split("---");
-                                yaml = yaml_array[1];
                                 var apis_json = jsyaml.load(yaml);
 
                                 //var start = document.getElementById("include-start-count").value;
