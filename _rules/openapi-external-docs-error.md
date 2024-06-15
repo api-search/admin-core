@@ -1,0 +1,16 @@
+---
+score: 1
+name: External Docs
+description: Warn external docs.
+image: https://kinlane-productions2.s3.amazonaws.com/apis-json-icons/rules.png
+url: https://example.com/apis/openapi-external-docs-error.yml
+created: '2024-06-15'
+modified: '2024-06-15'
+specificationVersion: '0.16'
+tags:
+  - OpenAPI
+apis: []
+maintainers:
+  - FN: API Evangelist
+    email: API Evangelist
+---

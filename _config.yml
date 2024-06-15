@@ -91,18 +91,14 @@ sass:
   style:            compressed
 
 collections:
-  info:
+  rules:
     output:         true
-  faqs:
-    output:         false
-  timeline:
-    output:         false
 
 # Defaults
 defaults:
-  # _posts
+  # _rules
   - scope:
       path:         ""
-      type:         posts
+      type:         rules
     values:
-      layout:       post
+      layout:       rules

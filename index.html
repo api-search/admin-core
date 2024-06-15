@@ -32,6 +32,7 @@ width: expand
             <h2>APIs.io Network Admin</h2>
             <textarea style="display: none;" id="network" style="width: 100%; height: 100px;"></textarea>
             <textarea style="display: none;" id="vocabulary" style="width: 100%; height: 100px;"></textarea>
+            <textarea style="display: none;" id="rules" style="width: 100%; height: 100px;">{{ site.rules | jsonify }}</textarea>
             <textarea style="display: none;" id="apis_json" style="width: 100%; height: 100px;"></textarea>
             <textarea style="display: none;" id="apis_json_overlay" style="width: 100%; height: 100px;"></textarea>
             <textarea style="display: none;" id="openapi" style="width: 100%; height: 100px;"></textarea>
@@ -84,6 +85,23 @@ width: expand
             </table>                        
             <div id="manage"></div>
             <script>
+
+                function getDateWeek(date) {
+                    const currentDate = 
+                        (typeof date === 'object') ? date : new Date();
+                    const januaryFirst = 
+                        new Date(currentDate.getFullYear(), 0, 1);
+                    const daysToNextMonday = 
+                        (januaryFirst.getDay() === 1) ? 0 : 
+                        (7 - januaryFirst.getDay()) % 7;
+                    const nextMonday = 
+                        new Date(currentDate.getFullYear(), 0, 
+                        januaryFirst.getDate() + daysToNextMonday);
+                
+                    return (currentDate < nextMonday) ? 52 : 
+                    (currentDate > nextMonday ? Math.ceil(
+                    (currentDate - nextMonday) / (24 * 3600 * 1000) / 7) : 1);
+                }                
 
                 function slugify(str) {
                     return String(str)
@@ -326,37 +344,35 @@ width: expand
                     var path_array = working.split(", ");
                     var summary_array = summary.split(" ");
 
-                    //console.log(path);
-                    //console.log(working);
+                    if(verb.toLowerCase() == 'get' || verb.toLowerCase() == 'post' || verb.toLowerCase() == 'put' || verb.toLowerCase() == 'patch' || verb.toLowerCase() == 'delete'){
 
-                    if(!openapi.paths[path][verb].tags){
                         openapi.paths[path][verb].tags = [];
-                    }
-                    else{
-                        openapi.paths[path][verb].tags = []
-                    }
 
-                    for (let i = 0; i < path_array.length; i++) {
-                        var this_tag = path_array[i];
-                        this_tag = this_tag.replace(/[._-]/g, ' ');
-                        //console.log("this_tag: " + this_tag);
-                        if(this_tag.length>1){
-                            this_tag = this_tag.trim();
-                            openapi.paths[path][verb].tags.push(this_tag);
-                        }
-                    }
-                    for (let i = 0; i < summary_array.length; i++) {
-                        var this_tag = summary_array[i];
-                        this_tag = this_tag.replace(/[._-]/g, ' ');
-                        //console.log("this_tag: " + this_tag);
-                        if(this_tag.length>1){
-                            this_tag = this_tag.trim();
-                            openapi.paths[path][verb].tags.push(this_tag);
-                        }
-                    }                    
-                    document.getElementById("tags-" + i + '-' + j + '-' + path + '-' + verb).value = openapi.paths[path][verb].tags;
-                    document.getElementById("openapi").value = JSON.stringify(openapi);
+                        //console.log(path);
+                        //console.log(verb);
+                        //console.log(openapi.paths[path][verb].tags);                    
 
+                        for (let i = 0; i < path_array.length; i++) {
+                            var this_tag = path_array[i];
+                            this_tag = this_tag.replace(/[._-]/g, ' ');
+                            console.log("this_tag: " + this_tag);
+                            if(this_tag.length>1){
+                                this_tag = this_tag.trim();
+                                openapi.paths[path][verb].tags.push(this_tag);
+                            }
+                        }
+                        for (let i = 0; i < summary_array.length; i++) {
+                            var this_tag = summary_array[i];
+                            this_tag = this_tag.replace(/[._-]/g, ' ');
+                            console.log("this_tag: " + this_tag);
+                            if(this_tag.length>1){
+                                this_tag = this_tag.trim();
+                                openapi.paths[path][verb].tags.push(this_tag);
+                            }
+                        }                    
+                        document.getElementById("tags-" + i + '-' + j + '-' + path + '-' + verb).value = openapi.paths[path][verb].tags;
+                        document.getElementById("openapi").value = JSON.stringify(openapi);
+                    }
                 }
 
                 function parseCamelCaseSummary(i,j,path,verb){
@@ -690,7 +706,7 @@ width: expand
                     for (const [path, method] of Object.entries(openapi.paths)) {
                         for (const [verb, operation] of Object.entries(method)) {
 
-                            if(verb.toLowerCase() !='description'){
+                            if(verb.toLowerCase() == 'get' || verb.toLowerCase() == 'post' || verb.toLowerCase() == 'put' || verb.toLowerCase() == 'patch' || verb.toLowerCase() == 'delete'){
                             
                             if(!operation.summary){
                                 generateSummary(i,j,path,verb);
@@ -1196,7 +1212,7 @@ width: expand
                             for (const [path, method] of Object.entries(openapi.paths)) {
                                 for (const [verb, operation] of Object.entries(method)) {    
 
-                                    if(verb.toLowerCase() !='description'){
+                                    if(verb.toLowerCase() == 'get' || verb.toLowerCase() == 'post' || verb.toLowerCase() == 'put' || verb.toLowerCase() == 'patch' || verb.toLowerCase() == 'delete'){
                                         
                                         var operation_summary = '';
                                         if(operation.summary){
@@ -1352,7 +1368,7 @@ width: expand
                                 for (const [path, method] of Object.entries(openapi.paths)) {
                                     for (const [verb, operation] of Object.entries(method)) {    
 
-                                        if(verb.toLowerCase() !='description'){
+                                        if(verb.toLowerCase() == 'get' || verb.toLowerCase() == 'post' || verb.toLowerCase() == 'put' || verb.toLowerCase() == 'patch' || verb.toLowerCase() == 'delete'){
                                             
                                             var operation_summary = '';
                                             if(operation.summary){
@@ -1433,7 +1449,7 @@ width: expand
                     //console.log(apis_json_overlay);
                     for (const [path, method] of Object.entries(openapi.paths)) {
                         for (const [verb, operation] of Object.entries(method)) {
-                            if(verb.toLowerCase() !='description'){
+                            if(verb.toLowerCase() == 'get' || verb.toLowerCase() == 'post' || verb.toLowerCase() == 'put' || verb.toLowerCase() == 'patch' || verb.toLowerCase() == 'delete'){
                                 if(operation.tags){
                                     for (let k = 0; k < operation.tags.length; k++) {
                                         var already = 0;
@@ -1460,6 +1476,190 @@ width: expand
                     document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);                    
 
                     }                
+
+                function rateOpenAPI(i, j, openapi_path, apis_json_url) {
+
+                    var github_token = document.getElementById("github_token").value;
+                    var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
+                    var all_rules = JSON.parse(document.getElementById("rules").value);
+                    var openapi = JSON.parse(document.getElementById("openapi").value);
+                    var aws_token = document.getElementById("aws_token").value;
+
+                    var segments = apis_json_url.split("/");
+                    var node = segments[4];
+                    var provider = segments[7];                       
+
+                    var linting_api_url = 'https://linter-api.apis.io/linter/openapi';
+
+                    const options = {
+                        method: 'POST',
+                        headers: {
+                            "Accept": "application/json",
+                            "X-API-KEY": aws_token                 
+                        },
+                        body: JSON.stringify(openapi)
+                    };  
+
+                    fetch(linting_api_url,options)
+                        .then(function(response) {
+                            if (!response.ok) {
+                                console.log('Error with Status Code: ' + response.status);
+                                return;
+                            }
+                            response.json().then(function(data) {   
+
+                                var api_score = 0;
+                                //console.log(data);
+                                var rating = {};
+                                rating.weekNumber = getDateWeek();
+                                rating.rule = [];
+
+                                for (let m = 0; m < data.length; m++) {
+                                    var rule = {};
+                                    rule.code = data[m].code;
+                                    rule.message = data[m].message;
+                                    rating.rule.push(rule);
+
+                                    for (let r = 0; r < all_rules.length; r++) {
+                                        if(all_rules[r].slug == data[m].code){
+                                            console.log(data[m].code + " == " + all_rules[r].score);
+                                            api_score = api_score + all_rules[r].score;
+                                        }
+                                    }
+                                }
+
+                                console.log("overall score: " + api_score);
+                                apis_json_overlay.apis[i].score = api_score;
+                                document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
+                                
+                                //console.log(rating);
+                                //console.log(openapi_path);
+                                var ratings_overlay_path = openapi_path.replace("openapi-original.yml","openapi-api-evangelist-ratings.yml");
+                                ratings_overlay_path = ratings_overlay_path.replace("properties/","overlays/");
+
+                                if(apis_json_overlay.apis[i].overlays){
+
+                                }
+                                else{
+                                    apis_json_overlay.apis[i].overlays = [];
+                                }
+                                var already = 0;
+                                for (let m = 0; m < apis_json_overlay.apis[i].overlays.length; m++) {
+                                    if(apis_json_overlay.apis[i].overlays[m].type == 'API Evangelist Ratings' && apis_json_overlay.apis[i].overlays[m].url == ratings_overlay_path){
+                                        already = 1; 
+                                    }
+                                }
+                                if(already == 0){
+                                    var overlay = {};
+                                    overlay.type = "API Evangelist Ratings";
+                                    overlay.url = ratings_overlay_path;
+                                    apis_json_overlay.apis[i].overlays.push(overlay);
+                                    document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
+                                }
+
+                                var github_url = 'https://api.github.com/repos/api-search/' + node + '/contents/_data/' + provider + "/" + ratings_overlay_path;
+                                console.log("github_url: " + github_url);                    
+
+                                const options = {
+                                    method: 'get',
+                                    headers: {
+                                        "Accept": "application/vnd.github+json",
+                                        "Authorization": 'Bearer ' + github_token
+                                    }
+                                };  
+
+                                fetch(github_url,options)
+                                    .then(function(response) {
+                                        if (!response.ok) {
+                                            
+                                            //console.log('Error with Status Code: ' + response.status);
+
+                                            var c = {};
+                                            c.name = "Kin Lane";
+                                            c.email = "kinlane@gmail.com";
+
+                                            var m = {};
+                                            m.message = 'Creating API Evangelist Rating Overlay';
+                                            m.committer = c;
+                                            var save_overlay = jsyaml.dump(rating);
+                                            m.content = btoa(unescape(encodeURIComponent(save_overlay)));
+
+                                            const options = {
+                                                method: 'PUT',
+                                                headers: {
+                                                    "Accept": "application/vnd.github+json",
+                                                    "Authorization": 'Bearer ' + github_token                                 
+                                                },
+                                                body: JSON.stringify(m)
+                                            };  
+
+                                            fetch(github_url,options)
+                                                .then(function(response) {
+                                                    if (!response.ok) {
+                                                        console.log('Error with Status Code: ' + response.status);
+                                                        return;
+                                                    }
+                                                    response.json().then(function(data) {   
+                                                        console.log(data);                                                                           
+                                                    });
+                                                })
+                                                .catch(function(err) {
+                                                    console.log('Error: ' + err);
+                                            }); 
+
+                                            return;
+                                        }
+                                        response.json().then(function(data) {   
+
+                                            var sha = data.sha;
+                                        
+                                            var c = {};
+                                            c.name = "Kin Lane";
+                                            c.email = "kinlane@gmail.com";
+
+                                            var m = {};
+                                            m.message = 'Saving API Evangelist Rating Overlay';
+                                            m.committer = c;
+                                            m.sha = sha;
+                                            var save_overlay = jsyaml.dump(rating);
+                                            m.content = btoa(unescape(encodeURIComponent(save_overlay)));
+
+                                            const options = {
+                                                method: 'PUT',
+                                                headers: {
+                                                    "Accept": "application/vnd.github+json",
+                                                    "Authorization": 'Bearer ' + github_token                                 
+                                                },
+                                                body: JSON.stringify(m)
+                                            };  
+
+                                            fetch(github_url,options)
+                                                .then(function(response) {
+                                                    if (!response.ok) {
+                                                        console.log('Error with Status Code: ' + response.status);
+                                                        return;
+                                                    }
+                                                    response.json().then(function(data) {   
+                                                        //console.log(data);                                                                           
+                                                    });
+                                                })
+                                                .catch(function(err) {
+                                                    console.log('Error: ' + err);
+                                            }); 
+
+                                        });
+                                    })
+                                    .catch(function(err) {
+                                        console.log('Error: ' + err);
+                                });                                
+
+                            });
+                        })
+                        .catch(function(err) {
+                            console.log('Error: ' + err);
+                    });
+
+                    }
 
                 function saveOpenAPI(i, j, openapi_path, apis_json_url) {
 
@@ -1767,10 +1967,11 @@ width: expand
                                             html += '<td width="10%" align="center"><a href="#" onclick="processOpenAPI(' + i + ',' + j + ',' + "'" + apis_json_overlay.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Process</a></td>';
                                             html += '<td width="10%" align="center"><a href="#" onclick="pullTagsFromOpenAPI(' + i + ',' + j + ',' + "'" + apis_json_overlay.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Tags</a></td>';                                            
                                             html += '<td width="10%" align="center"><a href="#" onclick="saveOpenAPI(' + i + ',' + j + ',' + "'" + apis_json_overlay.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Save</a></td>';
+                                            html += '<td width="10%" align="center"><a href="#" onclick="rateOpenAPI(' + i + ',' + j + ',' + "'" + apis_json_overlay.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Rate</a></td>';
                                             html += '<td width="10%" align="center"><a href="#" onclick="resetOpenAPI(' + i + ',' + j + ',' + "'" + apis_json_overlay.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Reset</a></td>';
                                         }
                                         else {
-                                            html += '<td colspan="4"></td>';
+                                            html += '<td colspan="5"></td>';
                                             html += '<td><a href="' + apis_json_overlay.apis[i].properties[j].url + '" target="_blank">View</a></td>';
                                             html += '<td width="10%" align="center"><a href="#" onclick="harvestUrl(' + i + ',' + "'" + apis_json_url + "'" + '); return false;">Harvest</a></td>';
                                         }
