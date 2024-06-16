@@ -63,6 +63,7 @@ width: expand
                     --->
                 </tr>
             </table>
+            <div id="details"></div>
             <table width="100%">
                 <tr>
                     <td align="center" id="apis_json_node_overlay_toolbar">
@@ -70,7 +71,10 @@ width: expand
                     </td>        
                     <td align="center" id="apis_json_toolbar">
                         <button onclick="saveAPIsJSON(); return false;" type="button" class="btn btn-dark">Save APIs.json</button>
-                    </td>                                
+                    </td>
+                    <td align="center" id="apis_json_node_overlay_toolbar">
+                        <button onclick="rateAPIsJSON(); return false;" type="button" class="btn btn-dark">Rate APIs.json Overlay</button>
+                    </td>                                                     
                     <td align="center" id="apis_json_overlay_toolbar">
                         <button onclick="saveAPIsJSONOverlay(); return false;" type="button" class="btn btn-dark">Save APIs.json Overlay</button>
                     </td>
@@ -80,7 +84,7 @@ width: expand
                 <tr>
                     <td align="center" id="apis_json_node_overlay_toolbar">
                         <button onclick="cleanAPINames(); return false;" type="button" class="btn btn-dark">Clean APIs Names</button>
-                    </td>   
+                    </td>                        
                 </tr>
             </table>                        
             <div id="manage"></div>
@@ -124,7 +128,7 @@ width: expand
                 fetch('https://explore.apis.io/apis.json', options)
                     .then(function (response) {
                         if (!response.ok) {
-                            console.log('Error with Status Code: ' + response.status);
+                             //console.log('Error with Status Code: ' + response.status);
                         }
                         response.json().then(function (data) {
 
@@ -164,7 +168,7 @@ width: expand
                 fetch('https://raw.githubusercontent.com/api-search/admin/main/vocabulary.yml', options)
                     .then(function (response) {
                         if (!response.ok) {
-                            console.log('Error with Status Code: ' + response.status);
+                             //console.log('Error with Status Code: ' + response.status);
                         }
                         response.text().then(function (yaml) {
 
@@ -225,7 +229,7 @@ width: expand
                         
                         working = working.replaceAll("Api API","API");
                         
-                        console.log("working: " + working);
+                        //console.log("working: " + working);
 
                         apis_json_overlay.apis[i].name = working;
                         if(document.getElementById('name-' + i)){
@@ -237,6 +241,189 @@ width: expand
                     document.getElementById("apis_json_overlay").value  = JSON.stringify(apis_json_overlay);                  
 
                 }
+
+            function rateAPIsJSON() {
+
+                var github_token = document.getElementById("github_token").value;
+                var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
+                var apis_json_url = document.getElementById("include").value;
+                //console.log(apis_json_url);
+                var all_rules = JSON.parse(document.getElementById("rules").value);
+                var aws_token = document.getElementById("aws_token").value;
+
+                var segments = apis_json_url.split("/");
+                var node = segments[4];
+                var provider = segments[7];                       
+
+                var linting_api_url = 'https://linter-api.apis.io/linter/apisjson';
+
+                const options = {
+                    method: 'POST',
+                    headers: {
+                        "Accept": "application/json",
+                        "X-API-KEY": aws_token                 
+                    },
+                    body: JSON.stringify(apis_json_overlay)
+                };  
+
+                fetch(linting_api_url,options)
+                    .then(function(response) {
+                        if (!response.ok) {
+                             //console.log('Error with Status Code: ' + response.status);
+                            return;
+                        }
+                        response.json().then(function(data) {   
+
+                            var api_score = 0;
+                            //console.log(data);
+                            var rating = {};
+                            rating.weekNumber = getDateWeek();
+                            rating.rule = [];
+
+                            for (let m = 0; m < data.length; m++) {
+                                var rule = {};
+                                rule.code = data[m].code;
+                                rule.message = data[m].message;
+                                rating.rule.push(rule);
+
+                                for (let r = 0; r < all_rules.length; r++) {
+                                    if(all_rules[r].slug == data[m].code){
+                                        //console.log(data[m].code + " == " + all_rules[r].score);
+                                        api_score = api_score + all_rules[r].score;
+                                    }
+                                }
+                            }
+
+                            //console.log("overall score: " + api_score);
+                            apis_json_overlay.score = api_score;
+                            document.getElementById("score").value = api_score;
+                            
+                            //console.log(rating);
+     
+                            if(apis_json_overlay.overlays){
+
+                            }
+                            else{
+                                apis_json_overlay.overlays = [];
+                            }
+                            var already = 0;
+                            for (let m = 0; m < apis_json_overlay.overlays.length; m++) {
+                                if(apis_json_overlay.overlays[m].type == 'API Evangelist Ratings'){
+                                    already = 1; 
+                                    apis_json_overlay.overlays[m].url = ratings_overlay_path;
+                                }
+                            }
+                            if(already == 0){
+                                var overlay = {};
+                                overlay.type = "API Evangelist Ratings";
+                                overlay.url = "/overlays/api-evangelist-ratings.yml";
+                                apis_json_overlay.overlays.push(overlay);                                
+                            }
+                            document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
+                            
+                            var github_url = 'https://api.github.com/repos/api-search/' + node + '/contents/_data/' + provider + "/overlays/api-evangelist-ratings.yml";
+                            //console.log("github_url: " + github_url);                    
+
+                            const options = {
+                                method: 'get',
+                                headers: {
+                                    "Accept": "application/vnd.github+json",
+                                    "Authorization": 'Bearer ' + github_token
+                                }
+                            };  
+
+                            fetch(github_url,options)
+                                .then(function(response) {
+                                    if (!response.ok) {
+                                        
+                                        //console.log('Error with Status Code: ' + response.status);
+
+                                        var c = {};
+                                        c.name = "Kin Lane";
+                                        c.email = "kinlane@gmail.com";
+
+                                        var m = {};
+                                        m.message = 'Creating API Evangelist Rating Overlay';
+                                        m.committer = c;
+                                        var save_overlay = jsyaml.dump(rating);
+                                        m.content = btoa(unescape(encodeURIComponent(save_overlay)));
+
+                                        const options = {
+                                            method: 'PUT',
+                                            headers: {
+                                                "Accept": "application/vnd.github+json",
+                                                "Authorization": 'Bearer ' + github_token                                 
+                                            },
+                                            body: JSON.stringify(m)
+                                        };  
+
+                                        fetch(github_url,options)
+                                            .then(function(response) {
+                                                if (!response.ok) {
+                                                     //console.log('Error with Status Code: ' + response.status);
+                                                    return;
+                                                }
+                                                response.json().then(function(data) {   
+                                                    //console.log(data);                                                                           
+                                                });
+                                            })
+                                            .catch(function(err) {
+                                                 //console.log('Error: ' + err);
+                                        }); 
+
+                                        return;
+                                    }
+                                    response.json().then(function(data) {   
+
+                                        var sha = data.sha;
+                                    
+                                        var c = {};
+                                        c.name = "Kin Lane";
+                                        c.email = "kinlane@gmail.com";
+
+                                        var m = {};
+                                        m.message = 'Saving API Evangelist Rating Overlay';
+                                        m.committer = c;
+                                        m.sha = sha;
+                                        var save_overlay = jsyaml.dump(rating);
+                                        m.content = btoa(unescape(encodeURIComponent(save_overlay)));
+
+                                        const options = {
+                                            method: 'PUT',
+                                            headers: {
+                                                "Accept": "application/vnd.github+json",
+                                                "Authorization": 'Bearer ' + github_token                                 
+                                            },
+                                            body: JSON.stringify(m)
+                                        };  
+
+                                        fetch(github_url,options)
+                                            .then(function(response) {
+                                                if (!response.ok) {
+                                                     //console.log('Error with Status Code: ' + response.status);
+                                                    return;
+                                                }
+                                                response.json().then(function(data) {   
+                                                    //console.log(data);                                                                           
+                                                });
+                                            })
+                                            .catch(function(err) {
+                                                 //console.log('Error: ' + err);
+                                        }); 
+
+                                    });
+                                })
+                                .catch(function(err) {
+                                     //console.log('Error: ' + err);
+                            });                                
+
+                        });
+                    })
+                    .catch(function(err) {
+                         //console.log('Error: ' + err);
+                });
+
+                }                
 
                 function splitPascalCase(word) {
                     const camelCase = word.replace(/([a-z])([A-Z])/g, '$1 $2').split(" ");
@@ -281,7 +468,7 @@ width: expand
                         .then(function (response) {
 
                             if (!response.ok) {
-                                console.log('Error with Status Code: ' + response.status);
+                                 //console.log('Error with Status Code: ' + response.status);
                             }
                             response.text().then(function (yaml) {
                                 
@@ -355,7 +542,7 @@ width: expand
                         for (let i = 0; i < path_array.length; i++) {
                             var this_tag = path_array[i];
                             this_tag = this_tag.replace(/[._-]/g, ' ');
-                            console.log("this_tag: " + this_tag);
+                            //console.log("this_tag: " + this_tag);
                             if(this_tag.length>1){
                                 this_tag = this_tag.trim();
                                 openapi.paths[path][verb].tags.push(this_tag);
@@ -364,7 +551,7 @@ width: expand
                         for (let i = 0; i < summary_array.length; i++) {
                             var this_tag = summary_array[i];
                             this_tag = this_tag.replace(/[._-]/g, ' ');
-                            console.log("this_tag: " + this_tag);
+                            //console.log("this_tag: " + this_tag);
                             if(this_tag.length>1){
                                 this_tag = this_tag.trim();
                                 openapi.paths[path][verb].tags.push(this_tag);
@@ -399,8 +586,8 @@ width: expand
 
                     var path_base = path;
 
-                    console.log("path: " + path_base);
-                    console.log("verb: " + verb);
+                    //console.log("path: " + path_base);
+                    //console.log("verb: " + verb);
 
                     var working = path_base.replaceAll("{","");
                     working = working.replaceAll("}","");
@@ -420,7 +607,7 @@ width: expand
                     working = working.trim();
                     working = capitalizeFirstLetter(working);
                     
-                    console.log("working: " + working);   
+                    //console.log("working: " + working);   
                     
                     var action = "Retrieve ";
                     if(verb.toLowerCase() == 'post'){
@@ -507,7 +694,7 @@ width: expand
                     fetch(open_ai_url, options)
                         .then(function (response) {
                             if (!response.ok) {
-                                console.log('Error with Status Code: ' + response.status);
+                                 //console.log('Error with Status Code: ' + response.status);
                             }
                             response.json().then(function (data) {
                                 //console.log(data.choices[0].message.content);
@@ -730,7 +917,7 @@ width: expand
 
                     github_overlay_url = 'https://api.github.com/repos/api-search/' + node + '/contents/_data/' + provider + '/overlays/' + provider + '-' + base_overlay_file_name;
                     
-                    console.log("github_url: " + github_overlay_url);                    
+                    //console.log("github_url: " + github_overlay_url);                    
 
                     var options = {
                         method: 'get',
@@ -745,7 +932,7 @@ width: expand
                         .then(function(response) {
                             if (!response.ok) {
                                 
-                                console.log('Creating: ' + response.status);
+                                //console.log('Creating: ' + response.status);
 
                                 var c = {};
                                 c.name = "Kin Lane";
@@ -771,7 +958,7 @@ width: expand
                                 fetch(github_overlay_url,options)
                                     .then(function(response) {
                                         if (!response.ok) {
-                                            console.log('Error with Status Code: ' + response.status);
+                                             //console.log('Error with Status Code: ' + response.status);
                                             return;
                                         }
                                         response.json().then(function(data) {   
@@ -779,7 +966,7 @@ width: expand
                                         });
                                     })
                                     .catch(function(err) {
-                                        console.log('Error: ' + err);
+                                         //console.log('Error: ' + err);
                                 });
 
                                 return;
@@ -811,7 +998,7 @@ width: expand
                                 fetch(github_overlay_url,options)
                                     .then(function(response) {
                                         if (!response.ok) {
-                                            console.log('Error with Status Code: ' + response.status);
+                                             //console.log('Error with Status Code: ' + response.status);
                                             return;
                                         }
                                         response.json().then(function(data) {   
@@ -819,12 +1006,12 @@ width: expand
                                         });
                                     })
                                     .catch(function(err) {
-                                        console.log('Error: ' + err);
+                                         //console.log('Error: ' + err);
                                 }); 
                             });
                         })
                         .catch(function(err) {
-                            console.log('Error: ' + err);
+                             //console.log('Error: ' + err);
                     });                      
                 }
 
@@ -832,7 +1019,7 @@ width: expand
 
                     var github_property_url = 'https://api.github.com/repos/api-search/' + node + '/contents/_data/' + provider + '/properties/' + provider + '-' + base_openapi_file_name;
                     
-                    console.log("github_url: " + github_property_url);                    
+                    //console.log("github_url: " + github_property_url);                    
 
                     var options = {
                         method: 'get',
@@ -847,7 +1034,7 @@ width: expand
                         .then(function(response) {
                             if (!response.ok) {
                                 
-                                console.log('Creating New Property: ' + response.status);
+                                //console.log('Creating New Property: ' + response.status);
 
                                 var c = {};
                                 c.name = "Kin Lane";
@@ -873,7 +1060,7 @@ width: expand
                                 fetch(github_property_url,options)
                                     .then(function(response) {
                                         if (!response.ok) {
-                                            console.log('Error with Status Code: ' + response.status);
+                                             //console.log('Error with Status Code: ' + response.status);
                                             return;
                                         }
                                         response.json().then(function(data) {   
@@ -881,7 +1068,7 @@ width: expand
                                         });
                                     })
                                     .catch(function(err) {
-                                        console.log('Error: ' + err);
+                                         //console.log('Error: ' + err);
                                 }); 
 
                                 return;
@@ -914,7 +1101,7 @@ width: expand
                                 fetch(github_property_url,options)
                                     .then(function(response) {
                                         if (!response.ok) {
-                                            console.log('Error with Status Code: ' + response.status);
+                                             //console.log('Error with Status Code: ' + response.status);
                                             return;
                                         }
                                         response.json().then(function(data) {   
@@ -922,12 +1109,12 @@ width: expand
                                         });
                                     })
                                     .catch(function(err) {
-                                        console.log('Error: ' + err);
+                                         //console.log('Error: ' + err);
                                 }); 
                             });
                         })
                         .catch(function(err) {
-                            console.log('Error: ' + err);
+                             //console.log('Error: ' + err);
                     });                    
                 }
 
@@ -1054,8 +1241,8 @@ width: expand
                 var openapi = JSON.parse(document.getElementById("openapi").value);
                 var github_token = document.getElementById("github_token").value;
 
-                console.log("pulling1: " + openapi_path);
-                console.log("pulling2: " + apis_json_url);
+                //console.log("pulling1: " + openapi_path);
+                //console.log("pulling2: " + apis_json_url);
 
                 var apis_json_overlay_url = apis_json_url.replace("overlays/apis-io-search.yml", openapi_path);
                 apis_json_overlay_url = apis_json_overlay_url.replace("https://raw.githubusercontent.com/","https://api.github.com/repos/");
@@ -1063,7 +1250,7 @@ width: expand
                 apis_json_overlay_url = apis_json_overlay_url.replace("properties/", "overlays/");
                 apis_json_overlay_url = apis_json_overlay_url.replace("-openapi-original.yml", "-openapi-search.yml");
 
-                console.log("overlay: " + apis_json_overlay_url);
+                //console.log("overlay: " + apis_json_overlay_url);
 
                 const options = {
                     method: 'GET'
@@ -1074,7 +1261,7 @@ width: expand
 
                         if (!response.ok) {
                             
-                            console.log('Create OpenAPI Overlay 111: ' + response.status);
+                            //console.log('Create OpenAPI Overlay 111: ' + response.status);
                     
                             var c = {};
                             c.name = "Kin Lane";
@@ -1100,15 +1287,15 @@ width: expand
                             fetch(apis_json_overlay_url,options)
                                 .then(function(response) {
                                     if (!response.ok) {
-                                        console.log('Error with Status Code: ' + response.status);
+                                         //console.log('Error with Status Code: ' + response.status);
                                         return;
                                     }
                                     response.json().then(function(data) {   
-                                        console.log(data);                                                                           
+                                        //console.log(data);                                                                           
                                     });
                                 })
                                 .catch(function(err) {
-                                    console.log('Error: ' + err);
+                                     //console.log('Error: ' + err);
                             });                             
 
                         }
@@ -1128,12 +1315,12 @@ width: expand
 
                 //document.getElementById("alert").innerHTML = "Loading OpenAPI..."
 
-                console.log("pulling: " + openapi_path);
-                console.log("pulling: " + apis_json_url);
+                //console.log("pulling: " + openapi_path);
+                //console.log("pulling: " + apis_json_url);
 
                 var url = apis_json_url.replace("overlays/apis-io-search.yml", openapi_path);
 
-                console.log("overlay: " + url);
+                //console.log("overlay: " + url);
 
                 const options = {
                     method: 'GET'
@@ -1143,7 +1330,7 @@ width: expand
                     .then(function (response) {
 
                         if (!response.ok) {
-                            console.log('Error with Status Code: ' + response.status);
+                             //console.log('Error with Status Code: ' + response.status);
                         }
                         response.text().then(function (yaml) {
 
@@ -1287,15 +1474,15 @@ width: expand
 
                     //document.getElementById("alert").innerHTML = "Loading OpenAPI..."
 
-                    console.log("pulling: " + openapi_path);
-                    console.log("pulling: " + apis_json_url);
+                    //console.log("pulling: " + openapi_path);
+                    //console.log("pulling: " + apis_json_url);
 
                     var url = apis_json_url.replace("overlays/apis-io-search.yml", openapi_path);
                     //var url = apis_json_url.replace("apis.md", openapi_path);
                     url = url.replace("properties/", "overlays/");
                     url = url.replace("-openapi-original.yml", "-openapi-search.yml");
 
-                    console.log("overlay: " + url);
+                     //console.log("overlay: " + url);
 
                     const options = {
                         method: 'GET'
@@ -1305,7 +1492,7 @@ width: expand
                         .then(function (response) {
 
                             if (!response.ok) {
-                                console.log('Error with Status Code: ' + response.status);
+                                 //console.log('Error with Status Code: ' + response.status);
                             }
                             response.text().then(function (yaml) {
 
@@ -1503,7 +1690,7 @@ width: expand
                     fetch(linting_api_url,options)
                         .then(function(response) {
                             if (!response.ok) {
-                                console.log('Error with Status Code: ' + response.status);
+                                 //console.log('Error with Status Code: ' + response.status);
                                 return;
                             }
                             response.json().then(function(data) {   
@@ -1522,16 +1709,17 @@ width: expand
 
                                     for (let r = 0; r < all_rules.length; r++) {
                                         if(all_rules[r].slug == data[m].code){
-                                            console.log(data[m].code + " == " + all_rules[r].score);
+                                             //console.log(data[m].code + " == " + all_rules[r].score);
                                             api_score = api_score + all_rules[r].score;
                                         }
                                     }
                                 }
 
-                                console.log("overall score: " + api_score);
+                                 //console.log("overall score: " + api_score);
                                 apis_json_overlay.apis[i].score = api_score;
+                                document.getElementById("score-" + i).value = api_score;
                                 document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
-                                
+
                                 //console.log(rating);
                                 //console.log(openapi_path);
                                 var ratings_overlay_path = openapi_path.replace("openapi-original.yml","openapi-api-evangelist-ratings.yml");
@@ -1558,7 +1746,7 @@ width: expand
                                 }
 
                                 var github_url = 'https://api.github.com/repos/api-search/' + node + '/contents/_data/' + provider + "/" + ratings_overlay_path;
-                                console.log("github_url: " + github_url);                    
+                                 //console.log("github_url: " + github_url);                    
 
                                 const options = {
                                     method: 'get',
@@ -1596,15 +1784,15 @@ width: expand
                                             fetch(github_url,options)
                                                 .then(function(response) {
                                                     if (!response.ok) {
-                                                        console.log('Error with Status Code: ' + response.status);
+                                                         //console.log('Error with Status Code: ' + response.status);
                                                         return;
                                                     }
                                                     response.json().then(function(data) {   
-                                                        console.log(data);                                                                           
+                                                         //console.log(data);                                                                           
                                                     });
                                                 })
                                                 .catch(function(err) {
-                                                    console.log('Error: ' + err);
+                                                     //console.log('Error: ' + err);
                                             }); 
 
                                             return;
@@ -1636,7 +1824,7 @@ width: expand
                                             fetch(github_url,options)
                                                 .then(function(response) {
                                                     if (!response.ok) {
-                                                        console.log('Error with Status Code: ' + response.status);
+                                                         //console.log('Error with Status Code: ' + response.status);
                                                         return;
                                                     }
                                                     response.json().then(function(data) {   
@@ -1644,22 +1832,22 @@ width: expand
                                                     });
                                                 })
                                                 .catch(function(err) {
-                                                    console.log('Error: ' + err);
+                                                     //console.log('Error: ' + err);
                                             }); 
 
                                         });
                                     })
                                     .catch(function(err) {
-                                        console.log('Error: ' + err);
+                                         //console.log('Error: ' + err);
                                 });                                
 
                             });
                         })
                         .catch(function(err) {
-                            console.log('Error: ' + err);
+                             //console.log('Error: ' + err);
                     });
 
-                    }
+                }
 
                 function saveOpenAPI(i, j, openapi_path, apis_json_url) {
 
@@ -1689,7 +1877,7 @@ width: expand
                     fetch(github_url,options)
                         .then(function(response) {
                             if (!response.ok) {
-                                console.log('Error with Status Code: ' + response.status);
+                                 //console.log('Error with Status Code: ' + response.status);
                                 return;
                             }
                             response.json().then(function(data) {   
@@ -1719,7 +1907,7 @@ width: expand
                                 fetch(github_url,options)
                                     .then(function(response) {
                                         if (!response.ok) {
-                                            console.log('Error with Status Code: ' + response.status);
+                                             //console.log('Error with Status Code: ' + response.status);
                                             return;
                                         }
                                         response.json().then(function(data) {   
@@ -1727,12 +1915,12 @@ width: expand
                                         });
                                     })
                                     .catch(function(err) {
-                                        console.log('Error: ' + err);
+                                         //console.log('Error: ' + err);
                                 }); 
                             });
                         })
                         .catch(function(err) {
-                            console.log('Error: ' + err);
+                             //console.log('Error: ' + err);
                     });
 
                 }
@@ -1768,7 +1956,7 @@ width: expand
                     fetch(github_url,options)
                         .then(function(response) {
                             if (!response.ok) {
-                                console.log('Error with Status Code: ' + response.status);
+                                 //console.log('Error with Status Code: ' + response.status);
                                 return;
                             }
                             response.json().then(function(data) {   
@@ -1801,7 +1989,7 @@ width: expand
                                 fetch(github_url,options)
                                     .then(function(response) {
                                         if (!response.ok) {
-                                            console.log('Error with Status Code: ' + response.status);
+                                             //console.log('Error with Status Code: ' + response.status);
                                             return;
                                         }
                                         response.json().then(function(data) {   
@@ -1809,12 +1997,12 @@ width: expand
                                         });
                                     })
                                     .catch(function(err) {
-                                        console.log('Error: ' + err);
+                                         //console.log('Error: ' + err);
                                 }); 
                             });
                         })
                         .catch(function(err) {
-                            console.log('Error: ' + err);
+                             //console.log('Error: ' + err);
                     });
 
                     }                 
@@ -1850,7 +2038,7 @@ width: expand
                     fetch(github_url,options)
                         .then(function(response) {
                             if (!response.ok) {
-                                console.log('Error with Status Code: ' + response.status);
+                                 //console.log('Error with Status Code: ' + response.status);
                                 return;
                             }
                             response.json().then(function(data) {   
@@ -1882,7 +2070,7 @@ width: expand
                                 fetch(github_url,options)
                                     .then(function(response) {
                                         if (!response.ok) {
-                                            console.log('Error with Status Code: ' + response.status);
+                                             //console.log('Error with Status Code: ' + response.status);
                                             return;
                                         }
                                         response.json().then(function(data) {   
@@ -1890,12 +2078,12 @@ width: expand
                                         });
                                     })
                                     .catch(function(err) {
-                                        console.log('Error: ' + err);
+                                         //console.log('Error: ' + err);
                                 }); 
                             });
                         })
                         .catch(function(err) {
-                            console.log('Error: ' + err);
+                             //console.log('Error: ' + err);
                     });
 
                     }                
@@ -1917,7 +2105,7 @@ width: expand
                         .then(function (response) {
 
                             if (!response.ok) {
-                                console.log('Error with Status Code: ' + response.status);
+                                 //console.log('Error with Status Code: ' + response.status);
                             }
                             response.text().then(function (yaml) {
                                 yaml = yaml.replace("---", "");
@@ -2034,7 +2222,7 @@ width: expand
                     fetch(harvest_url, options)
                         .then(function (response) {
                             if (!response.ok) {
-                                console.log('Error with Status Code: ' + response.status);
+                                 //console.log('Error with Status Code: ' + response.status);
                             }
                             response.json().then(function (harvest_urls) {
 
@@ -2261,7 +2449,7 @@ width: expand
                     fetch(open_ai_url, options)
                         .then(function (response) {
                             if (!response.ok) {
-                                console.log('Error with Status Code: ' + response.status);
+                                 //console.log('Error with Status Code: ' + response.status);
                             }
                             response.json().then(function (data) {
                                 //console.log(data.choices[0].message.content);
@@ -2305,7 +2493,7 @@ width: expand
                     fetch(search_url,options)
                     .then(function(response) {
                         if (!response.ok) {
-                            console.log('Error with Status Code: ' + response.status);
+                             //console.log('Error with Status Code: ' + response.status);
                         }
                         response.json().then(function(data) {   
 
@@ -2327,7 +2515,7 @@ width: expand
                         });
                         })
                         .catch(function(err) {
-                            console.log('Error: ' + err);
+                             //console.log('Error: ' + err);
                     });
 
                     }    
@@ -2342,7 +2530,7 @@ width: expand
                     //document.getElementById("alert").innerHTML = "Parsing Include..."
 
                     var apis_json_url = document.getElementById("include").value;
-                    console.log("pulling1: " + apis_json_url);
+                     //console.log("pulling1: " + apis_json_url);
 
                     const options = {
                         method: 'GET'
@@ -2352,7 +2540,7 @@ width: expand
                         .then(function (response) {
 
                             if (!response.ok) {
-                                console.log('Error with Status Code: ' + response.status);
+                                 //console.log('Error with Status Code: ' + response.status);
                             }
                             response.text().then(function (yaml) {
 
@@ -2365,11 +2553,40 @@ width: expand
 
                                 //console.log(apis_json);
 
+                                html = document.getElementById("details").innerHTML;
+
+                                html += '<div class="form-group">';
+                                html += '<label for="name"><strong>AID</strong></label>';
+                                html += '<input type="text" class="form-control" id="aid" aria-describedby="aid" value="' + apis_json.aid + '">';
+                                html += '</div>';
+
+                                html += '<div class="form-group">';
+                                html += '<label for="name"><strong>Score</strong></label>';
+                                html += '<input type="text" class="form-control" id="name" aria-describedby="score" value="' + apis_json.score + '">';
+                                html += '</div>';                                    
+
+                                html += '<div class="form-group">';
+                                html += '<label for="name-"><strong>Name</strong></label>';
+                                html += '<input type="text" class="form-control" id="name" aria-describedby="name" value="' + apis_json.name + '">';
+                                html += '</div>';
+                                html += '<div class="form-group">';
+                                html += '<label for="description"><strong>Description</strong></label>';
+                                html += '<input type="hidden" id="description2"><textarea rows="10" style="width: 100%: height: 400px;" class="form-control" id="description" aria-describedby="description">' + apis_json.description + '</textarea>';
+                                html += '</div>';
+                                html += '<div class="form-group">';
+                                html += '<label for="tags"><strong>Tags</label>';                                    
+                                html += '<textarea class="form-control" id="tags" aria-describedby="description" style="width: 100%: height: 100px;">' + apis_json.tags + '</textarea>';                                  
+                                html += '</div>';  
+                                
+                                document.getElementById("details").innerHTML = html;
+
                                 for (let i = 0; i < apis_json.apis.length; i++) {
                                     
                                     //if(i >= start && i <= end){
                                 
                                     var api_name = apis_json.apis[i].name;
+                                    var api_aid = apis_json.apis[i].aid;
+                                    var api_score = apis_json.apis[i].score;
                                     var api_description = apis_json.apis[i].description;
                                     if (api_description) {
                                         api_description = api_description.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "");
@@ -2382,8 +2599,19 @@ width: expand
                                     var api_base_url = apis_json.apis[i].baseURL;
 
                                     var api_tags = apis_json.apis[i].tags;
-    
+                                        
                                     html = document.getElementById("manage").innerHTML;
+
+                                    html += '<div class="form-group">';
+                                    html += '<label for="aid-' + i + '"><strong>AID</strong></label>';
+                                    html += '<input type="text" class="form-control" id="aid-' + i + '" aria-describedby="aid-' + i + '" value="' + api_aid + '">';
+                                    html += '</div>';
+
+                                    html += '<div class="form-group">';
+                                    html += '<label for="score-' + i + '"><strong>Score</strong></label>';
+                                    html += '<input type="text" class="form-control" id="score-' + i + '" aria-describedby="score-' + i + '" value="' + api_score + '">';
+                                    html += '</div>';                                    
+
                                     html += '<div class="form-group">';
                                     html += '<label for="name-' + i + '"><strong>Name</strong></label>';
                                     html += '<input type="text" class="form-control" id="name-' + i + '" onchange="saveAPIsJSONName(' + i + ');" aria-describedby="name-' + i + '" value="' + api_name + '">';
@@ -2398,10 +2626,12 @@ width: expand
                                     html += '<a href="#" onclick="dedupeAPIsJSONAPITags(' + i + '); return false;">DeDupe</a><br>';
                                     html += '<a href="#" onclick="compareAPIsJSONAPITagsWithVocabulary(' + i + '); return false;">Vocabulary</a>';                                    
                                     html += '</div>';
+
                                     html += '<div class="form-group">';
                                     html += '<label for="name-' + i + '"><strong>Human URL</strong></label>';
                                     html += '<input type="text" class="form-control" id="humanURL-' + i + '" onchange="saveAPIsJSONHumanURL(' + i + ');" value="' + api_human_url + '">';
                                     html += '</div>';
+
                                     html += '<div class="form-group">';
                                     html += '<label for="name-' + i + '"><strong>Base URL</strong></label>';
                                     html += '<input type="text" class="form-control" id="baseURL-' + i + '" onchange="saveAPIsJSONBaseURL(' + i + ');" value="' + api_base_url + '">';
