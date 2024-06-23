@@ -294,11 +294,11 @@ width: expand
                                 }
                             }
 
-                            //console.log("overall score: " + api_score);
+                            console.log("overall score: " + api_score);
                             apis_json_overlay.score = api_score;
                             document.getElementById("score").value = api_score;
                             
-                            //console.log(rating);
+                            console.log(rating);
      
                             if(apis_json_overlay.overlays){
 
@@ -1674,7 +1674,10 @@ width: expand
 
                     var segments = apis_json_url.split("/");
                     var node = segments[4];
-                    var provider = segments[7];                       
+                    var provider = segments[7];  
+                    
+                    /// TEMP
+                    openapi.components = {};
 
                     var linting_api_url = 'https://linter-api.apis.io/linter/openapi';
 
@@ -2553,7 +2556,8 @@ width: expand
 
                                 //console.log(apis_json);
 
-                                html = document.getElementById("details").innerHTML;
+                                document.getElementById("details").innerHTML = '';
+                                html = '';
 
                                 html += '<div class="form-group">';
                                 html += '<label for="name"><strong>AID</strong></label>';
@@ -2562,7 +2566,7 @@ width: expand
 
                                 html += '<div class="form-group">';
                                 html += '<label for="name"><strong>Score</strong></label>';
-                                html += '<input type="text" class="form-control" id="name" aria-describedby="score" value="' + apis_json.score + '">';
+                                html += '<input type="text" class="form-control" id="score" aria-describedby="score" value="' + apis_json.score + '">';
                                 html += '</div>';                                    
 
                                 html += '<div class="form-group">';
