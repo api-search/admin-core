@@ -1042,7 +1042,7 @@ Climate: ''
 Clinical: ''
 Clip: ''
 Clo: '~'
-Clock: ''
+Clock: Clocks
 Clone: ''
 Close: ''
 Cloud: ''
@@ -1343,13 +1343,13 @@ Createpermission: Permissions
 Createpermissionversion: Permission Versions
 Createresourceshare: Resource Share
 Createreversal: Reversals
-Creates: ''
+Creates: '~'
 Createschedulingpolicy: Scheduling Policy
 Createsnapshot: Snapshots
 Createunlinkedrefund: Unlinked Refunds
 Createuploadurl: Upload URLs
-Creating: ''
-Creation: ''
+Creating: '~'
+Creation: '~'
 Creation,: Creation
 Creation.: Creation
 Credential: Credentials
@@ -1617,7 +1617,7 @@ Detr: '~'
 Dev: '~'
 Dev Ops: DevOps
 Development: ''
-Device: ''
+Device: Devices
 Device Certificates: ''
 Device Deployments: ''
 Device Managed Networks: ''
@@ -1742,7 +1742,7 @@ Donation: Donations
 Donations: ''
 Done: '~'
 Dorametrics: DORA Metrics
-Download: ''
+Download: Downloads
 Downloads: ''
 Draft: ''
 Draft Payment: Draft Payments
@@ -1801,7 +1801,7 @@ Embedding: Embeddings
 Embeddings: ''
 Emergency: ''
 Emojis: ''
-Employer: ''
+Employer: Employers
 En: EN
 Enable: ''
 Enable Service: ''
@@ -2019,7 +2019,7 @@ Feeds: ''
 Feel: ''
 Fees: ''
 Fees.: Fees
-Fetch: ''
+Fetch: '~'
 Fi: '~'
 Fiab: '~'
 Field: Fields
@@ -2929,7 +2929,7 @@ Lineite: '~'
 Lineitemid: Line Item Identifier
 Lineitems: Line Items
 Lines: ''
-Link: ''
+Link: Links
 Link Up: ''
 Linkaccountsessions: Link Account Sessions
 Linked: ''
@@ -4260,7 +4260,7 @@ Recentitems: Recent Items
 Recently: ''
 Recipe: Recipes
 Recipes: ''
-Recipient: ''
+Recipient: Recipients
 Recognize: ''
 Recommend: ''
 Recommendatio: Recommendations
@@ -5936,7 +5936,7 @@ Vehic: '~'
 Vendor: Vendors
 Vendors: ''
 Veri: '~'
-Verification: ''
+Verification: Verifications
 Verification Attempts: ''
 Verification Checks: ''
 Verificationreports: Verification Reports
@@ -6439,3 +6439,29 @@ CODEOWNERS: '~'
 (apps): '~'
 (context): '~'
 (output): '~'
+(Deprecated): '~'
+(VOE): '~'
+(aka: '~'
+(beta): '~'
+/transactions/enrich: '~'
+Alt: '~'
+Assets),: '~'
+Ate: '~'
+Decision: Decisions
+Document(s): Documents
+E Wallet: E Wallets
+Er: '~'
+Fdx: FDX
+Freddie: '~'
+Hit: Hits
+Indiv: '~'
+Inval: '~'
+Loan: Loans
+Originator: Originators
+Processor: Processors
+Prov: '~'
+Reseller: Resellers
+Taxforms: Tax Forms
+Ual: '~'
+User’s: Users
+Whether: '~'
