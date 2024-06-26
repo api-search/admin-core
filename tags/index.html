@@ -118,6 +118,7 @@ width: expand
 
                                 var node_name = data.network[i].name;
                                 var node_slug = slugify(node_name);
+                                if(node_slug == 'ai'){ node_slug = 'artificial-intelligence'; }
                                 var node_url = data.network[i].url;
                                 var node_slug = node_url.replace(".apis.io/apis.json", "");
                                 node_slug = node_slug.replace("https://", "");
@@ -161,6 +162,8 @@ width: expand
                     });
 
                 function getNode(apis_json_url,node_slug){
+
+                    if(node_slug == 'ai'){ node_slug = 'artificial-intelligence'; }
        
                     const options = {
                         method: 'GET'
@@ -354,7 +357,7 @@ width: expand
                 }                
 
             function removeVocab(tag,node_slug,i){
-
+                if(node_slug == 'ai'){ node_slug = 'artificial-intelligence'; }
                 var vocabulary = JSON.parse(document.getElementById("vocabulary").value);
                 vocabulary[tag] = "~";
                 document.getElementById("vocabulary").value = JSON.stringify(vocabulary);
@@ -362,7 +365,7 @@ width: expand
                 }   
 
             function translateVocab(tag,node_slug,i){
-
+                if(node_slug == 'ai'){ node_slug = 'artificial-intelligence'; }
                 var vocabulary = JSON.parse(document.getElementById("vocabulary").value);
                 console.log(node_slug + '_' + i + '_translate');
                 vocabulary[tag] = document.getElementById(node_slug + '_' + i + '_translate').value;
@@ -373,6 +376,7 @@ width: expand
             function buildNodeTag(tag,node_slug,i){          
 
                 var tag_slug = slugify(tag);
+                if(node_slug == 'ai'){ node_slug = 'artificial-intelligence'; }
                 var vocabulary = JSON.parse(document.getElementById("vocabulary").value);
                 var github_url = 'https://api.github.com/repos/api-search/' + node_slug + '/contents/_tags/' + tag_slug + '.md';
                 console.log("github_url: " + github_url);                    
@@ -484,6 +488,7 @@ width: expand
                 }                   
 
             function listTags(node_slug){
+                if(node_slug == 'ai'){ node_slug = 'artificial-intelligence'; }
                 var html = '<table width="100%">';
                 var network_tags = JSON.parse(document.getElementById(node_slug + "_tags").value);
                 for (let i = 0; i < network_tags.length; i++) {
@@ -511,7 +516,7 @@ width: expand
             }
 
             function compareWithVocabulary(node_slug){
-
+                if(node_slug == 'ai'){ node_slug = 'artificial-intelligence'; }
                 var network_tags = JSON.parse(document.getElementById(node_slug + "_tags").value);
                 //console.log("Tags: " + network_tags.length);
                 var vocabulary = JSON.parse(document.getElementById("vocabulary").value);
