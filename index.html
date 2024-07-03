@@ -34,7 +34,7 @@ width: expand
             <textarea style="display: none;" id="vocabulary" style="width: 100%; height: 100px;"></textarea>
             <textarea style="display: none;" id="rules" style="width: 100%; height: 100px;">{{ site.rules | jsonify }}</textarea>
             <textarea style="display: none;" id="apis_json" style="width: 100%; height: 100px;"></textarea>
-            <textarea style="display: none;" id="apis_json_overlay" style="width: 100%; height: 100px;"></textarea>
+            <textarea id="apis_json_overlay" style="width: 100%; height: 100px;"></textarea>
             <textarea style="display: none;" id="openapi" style="width: 100%; height: 100px;"></textarea>
             <textarea style="display: none;" id="openapi2" style="width: 100%; height: 100px;"></textarea>
             <table width="100%">
@@ -79,7 +79,17 @@ width: expand
                         <button onclick="saveAPIsJSONOverlay(); return false;" type="button" class="btn btn-dark">Save APIs.json Overlay</button>
                     </td>
                 </tr>
-            </table>  
+                <tr>
+                    <td align="center" id="apis_json_node_overlay_toolbar">
+                        <button onclick="processAPIsEngine(); return false;" type="button" class="btn btn-dark" id="engine-process-button">Engine Process</button>
+                    </td>        
+                    <td align="center" id="apis_json_toolbar">
+                        <button onclick="generateAID(); return false;" type="button" class="btn btn-dark" id="generate-aid-button">Generate AID</button>
+                    </td>
+                    <td align="center" id="apis_json_node_overlay_toolbar"></td>                                                     
+                    <td align="center" id="apis_json_overlay_toolbar"></td>
+                </tr>                
+            </table>              
             <table width="100%">
                 <tr>
                     <td align="center" id="apis_json_node_overlay_toolbar">
@@ -2203,6 +2213,66 @@ width: expand
                     apis_json_overlay.apis[i].tags = document.getElementById("tags-" + i).value.split(",");
                     document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
                     }     
+
+                function generateAID(){
+                    
+                    var aws_token = document.getElementById("aws_token").value;
+
+                    var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
+
+                    var aid = apis_json_overlay.aid;
+
+                    for (let j = 0; j < apis_json_overlay.apis.length; j++) { 
+
+                        var name = apis_json_overlay.apis[j].name;
+                        var slug = slugify(name);
+                        var api_aid = aid + ":" +  slug;
+                        apis_json_overlay.apis[j].aid = api_aid;
+
+                    }
+
+                    document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
+
+                }
+
+                function processAPIsEngine(){
+                    
+                    var aws_token = document.getElementById("aws_token").value;
+
+                    var apis_json_overlay = document.getElementById("apis_json_overlay").value;
+
+                    var harvest_url = "https://engine-api.apis.io/engine/apisjson";
+                    
+                    const options = {
+                        method: 'PUT',
+                        headers: {
+                            "Accept": "application/json",
+                            "X-API-KEY": aws_token                
+                        }, 
+                        body: apis_json_overlay
+                    };
+
+                    //console.log(options);
+
+                    fetch(harvest_url, options)
+                        .then(function (response) {
+                            if (!response.ok) {
+                                 //console.log('Error with Status Code: ' + response.status);
+                            }
+                            response.json().then(function (results) {
+
+                                console.log(results); 
+                                document.getElementById("engine-process-button").style.color = 'green';
+
+                            });
+                        })
+                        .catch(function (err) {
+                            if (err == 'TypeError: Failed to fetch') {
+                                //document.getElementById("alert").innerHTML = err;
+                            }
+                        });
+
+                }
 
                 function harvestUrl(i,apis_json_url){
                     
