@@ -34,7 +34,7 @@ width: expand
             <textarea style="display: none;" id="vocabulary" style="width: 100%; height: 100px;"></textarea>
             <textarea style="display: none;" id="rules" style="width: 100%; height: 100px;">{{ site.rules | jsonify }}</textarea>
             <textarea style="display: none;" id="apis_json" style="width: 100%; height: 100px;"></textarea>
-            <textarea id="apis_json_overlay" style="width: 100%; height: 100px;"></textarea>
+            <textarea style="display: none;" id="apis_json_overlay" style="width: 100%; height: 100px;"></textarea>
             <textarea style="display: none;" id="openapi" style="width: 100%; height: 100px;"></textarea>
             <textarea style="display: none;" id="openapi2" style="width: 100%; height: 100px;"></textarea>
             <table width="100%">
@@ -258,6 +258,7 @@ width: expand
                 var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
                 var apis_json_url = document.getElementById("include").value;
                 //console.log(apis_json_url);
+
                 var all_rules = JSON.parse(document.getElementById("rules").value);
                 var aws_token = document.getElementById("aws_token").value;
 
@@ -316,11 +317,12 @@ width: expand
                             else{
                                 apis_json_overlay.overlays = [];
                             }
+        
                             var already = 0;
                             for (let m = 0; m < apis_json_overlay.overlays.length; m++) {
                                 if(apis_json_overlay.overlays[m].type == 'API Evangelist Ratings'){
                                     already = 1; 
-                                    apis_json_overlay.overlays[m].url = ratings_overlay_path;
+                                    apis_json_overlay.overlays[m].url = "overlays/apis-io-search.yml";
                                 }
                             }
                             if(already == 0){
@@ -329,6 +331,8 @@ width: expand
                                 overlay.url = "/overlays/api-evangelist-ratings.yml";
                                 apis_json_overlay.overlays.push(overlay);                                
                             }
+
+                            document.getElementById("score").value = api_score;
                             document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
                             
                             var github_url = 'https://api.github.com/repos/api-search/' + node + '/contents/_data/' + provider + "/overlays/api-evangelist-ratings.yml";
@@ -1734,8 +1738,9 @@ width: expand
                                 document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
 
                                 //console.log(rating);
-                                //console.log(openapi_path);
+                                console.log(openapi_path);
                                 var ratings_overlay_path = openapi_path.replace("openapi-original.yml","openapi-api-evangelist-ratings.yml");
+                                console.log(ratings_overlay_path);
                                 ratings_overlay_path = ratings_overlay_path.replace("properties/","overlays/");
 
                                 if(apis_json_overlay.apis[i].overlays){
@@ -1944,6 +1949,10 @@ width: expand
 
                     var apis_json = JSON.parse(document.getElementById("apis_json").value);
 
+                    let modified = new Date();
+                    apis_json.modified = modified.toISOString().split('T')[0];
+                    apis_json.specificationVersion = '{{ site.specificationVersion }}';
+
                     //console.log(apis_json);
 
                     var apis_json_url = document.getElementById("include").value;
@@ -2026,6 +2035,10 @@ width: expand
 
                     var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
                     
+                    let modified = new Date();
+                    apis_json_overlay.modified = modified.toISOString().split('T')[0];
+                    apis_json_overlay.specificationVersion = '{{ site.specificationVersion }}';
+
                     //console.log(apis_json_overlay);
 
                     var apis_json_url = document.getElementById("include").value;
@@ -2196,6 +2209,48 @@ width: expand
                     //document.getElementById("alert").innerHTML = "";
                     }  
                     
+                    function saveIncludeAPIsJSONAID(i){
+                    var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
+                    apis_json_overlay.aid = document.getElementById("aid").value;
+                    document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
+                    }  
+
+                function saveIncludeAPIsJSONScore(i){
+                    var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
+                    apis_json_overlay.score = document.getElementById("score").value;
+                    document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
+                    }                      
+
+                function saveIncludeAPIsJSONName(i){
+                    var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
+                    apis_json_overlay.name = document.getElementById("name").value;
+                    document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
+                    }  
+                    
+                function saveIncludeAPIsJSONDescription(i){
+                    var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
+                    apis_json_overlay.description = document.getElementById("description").value;
+                    document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
+                    }   
+                    
+                function saveIncludeAPIsJSONTags(i){
+                    var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
+                    apis_json_overlay.tags = document.getElementById("tags").value.split(",");
+                    document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
+                    }                                         
+
+                function saveAPIsJSONAID(i){
+                    var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
+                    apis_json_overlay.apis[i].aid = document.getElementById("aid-" + i).value;
+                    document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
+                    }  
+
+                function saveAPIsJSONScore(i){
+                    var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
+                    apis_json_overlay.apis[i].score = document.getElementById("score-" + i).value;
+                    document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
+                    }                      
+
                 function saveAPIsJSONName(i){
                     var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
                     apis_json_overlay.apis[i].name = document.getElementById("name-" + i).value;
@@ -2211,6 +2266,7 @@ width: expand
                 function saveAPIsJSONTags(i){
                     var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
                     apis_json_overlay.apis[i].tags = document.getElementById("tags-" + i).value.split(",");
+                    console.log(apis_json_overlay.apis[i].tags);
                     document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
                     }     
 
@@ -2228,6 +2284,8 @@ width: expand
                         var slug = slugify(name);
                         var api_aid = aid + ":" +  slug;
                         apis_json_overlay.apis[j].aid = api_aid;
+
+                        document.getElementById("aid-" + j).value = api_aid;
 
                     }
 
@@ -2631,25 +2689,25 @@ width: expand
 
                                 html += '<div class="form-group">';
                                 html += '<label for="name"><strong>AID</strong></label>';
-                                html += '<input type="text" class="form-control" id="aid" aria-describedby="aid" value="' + apis_json.aid + '">';
+                                html += '<input type="text" class="form-control" id="aid" aria-describedby="aid" onchange="saveIncludeAPIsJSONAID();" value="' + apis_json.aid + '">';
                                 html += '</div>';
 
                                 html += '<div class="form-group">';
                                 html += '<label for="name"><strong>Score</strong></label>';
-                                html += '<input type="text" class="form-control" id="score" aria-describedby="score" value="' + apis_json.score + '">';
+                                html += '<input type="text" class="form-control" id="score" aria-describedby="score" onchange="saveIncludeAPIsJSONScore();" value="' + apis_json.score + '">';
                                 html += '</div>';                                    
 
                                 html += '<div class="form-group">';
                                 html += '<label for="name-"><strong>Name</strong></label>';
-                                html += '<input type="text" class="form-control" id="name" aria-describedby="name" value="' + apis_json.name + '">';
+                                html += '<input type="text" class="form-control" id="name" aria-describedby="name" value="' + apis_json.name + '" onchange="saveIncludeAPIsJSONName();">';
                                 html += '</div>';
                                 html += '<div class="form-group">';
                                 html += '<label for="description"><strong>Description</strong></label>';
-                                html += '<input type="hidden" id="description2"><textarea rows="10" style="width: 100%: height: 400px;" class="form-control" id="description" aria-describedby="description">' + apis_json.description + '</textarea>';
+                                html += '<input type="hidden" id="description2"><textarea rows="10" style="width: 100%: height: 400px;" class="form-control" id="description" onchange="saveIncludeAPIsJSONDescription();" aria-describedby="description">' + apis_json.description + '</textarea>';
                                 html += '</div>';
                                 html += '<div class="form-group">';
                                 html += '<label for="tags"><strong>Tags</label>';                                    
-                                html += '<textarea class="form-control" id="tags" aria-describedby="description" style="width: 100%: height: 100px;">' + apis_json.tags + '</textarea>';                                  
+                                html += '<textarea class="form-control" id="tags" aria-describedby="tags" style="width: 100%: height: 100px;" onchange="saveIncludeAPIsJSONTags();">' + apis_json.tags + '</textarea>';                                  
                                 html += '</div>';  
                                 
                                 document.getElementById("details").innerHTML = html;
@@ -2678,12 +2736,12 @@ width: expand
 
                                     html += '<div class="form-group">';
                                     html += '<label for="aid-' + i + '"><strong>AID</strong></label>';
-                                    html += '<input type="text" class="form-control" id="aid-' + i + '" aria-describedby="aid-' + i + '" value="' + api_aid + '">';
+                                    html += '<input type="text" class="form-control" id="aid-' + i + '" aria-describedby="aid-' + i + '" onchange="saveAPIsJSONAID(' + i + ');" value="' + api_aid + '">';
                                     html += '</div>';
 
                                     html += '<div class="form-group">';
                                     html += '<label for="score-' + i + '"><strong>Score</strong></label>';
-                                    html += '<input type="text" class="form-control" id="score-' + i + '" aria-describedby="score-' + i + '" value="' + api_score + '">';
+                                    html += '<input type="text" class="form-control" id="score-' + i + '" aria-describedby="score-' + i + '" onchange="saveAPIsJSONScore(' + i + ');" value="' + api_score + '">';
                                     html += '</div>';                                    
 
                                     html += '<div class="form-group">';
@@ -2695,7 +2753,7 @@ width: expand
                                     html += '<input type="hidden" id="description2-' + i + '"><textarea rows="10" style="width: 100%: height: 400px;" class="form-control" onchange="saveAPIsJSONDescription(' + i + ');" id="description-' + i + '" aria-describedby="description-' + i + '">' + api_description + '</textarea>';
                                     html += '</div>';
                                     html += '<div class="form-group">';
-                                    html += '<label for="tags-' + i + '"><strong>Tags</label>';                                    
+                                    html += '<label for="tags-' + i + '"><strong>Tags HERE2</label>';                                    
                                     html += '<textarea class="form-control" onchange="saveAPIsJSONTags(' + i + ');" id="tags-' + i + '" aria-describedby="description-' + i + '" style="width: 100%: height: 100px;">' + api_tags + '</textarea>';
                                     html += '<a href="#" onclick="dedupeAPIsJSONAPITags(' + i + '); return false;">DeDupe</a><br>';
                                     html += '<a href="#" onclick="compareAPIsJSONAPITagsWithVocabulary(' + i + '); return false;">Vocabulary</a>';                                    

@@ -2,6 +2,8 @@ title:              APIs.io Admin
 description:        The is the administrative site for the APIs.io search engine.
 lang:               en
 
+specificationVersion: '0.18'
+
 # Site subpath, e.g. /blog
 baseurl:            ""
 
