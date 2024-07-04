@@ -2215,25 +2215,25 @@ width: expand
                     document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
                     }  
 
-                function saveIncludeAPIsJSONScore(i){
+                function saveIncludeAPIsJSONScore(){
                     var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
                     apis_json_overlay.score = document.getElementById("score").value;
                     document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
                     }                      
 
-                function saveIncludeAPIsJSONName(i){
+                function saveIncludeAPIsJSONName(){
                     var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
                     apis_json_overlay.name = document.getElementById("name").value;
                     document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
                     }  
                     
-                function saveIncludeAPIsJSONDescription(i){
+                function saveIncludeAPIsJSONDescription(){
                     var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
                     apis_json_overlay.description = document.getElementById("description").value;
                     document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
                     }   
                     
-                function saveIncludeAPIsJSONTags(i){
+                function saveIncludeAPIsJSONTags(){
                     var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
                     apis_json_overlay.tags = document.getElementById("tags").value.split(",");
                     document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);
