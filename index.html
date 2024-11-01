@@ -86,7 +86,9 @@ width: expand
                     <td align="center" id="apis_json_toolbar">
                         <button onclick="generateAID(); return false;" type="button" class="btn btn-dark" id="generate-aid-button">Generate AID</button>
                     </td>
-                    <td align="center" id="apis_json_node_overlay_toolbar"></td>                                                     
+                    <td align="center" id="apis_json_node_overlay_toolbar">
+                        <button onclick="rateAllAPIs(); return false;" type="button" class="btn btn-dark">Rate All APIs</button>
+                    </td>                                                   
                     <td align="center" id="apis_json_overlay_toolbar"></td>
                 </tr>                
             </table>              
@@ -94,7 +96,10 @@ width: expand
                 <tr>
                     <td align="center" id="apis_json_node_overlay_toolbar">
                         <button onclick="cleanAPINames(); return false;" type="button" class="btn btn-dark">Clean APIs Names</button>
-                    </td>                        
+                    </td>       
+                    <td align="center" id="apis_json_node_overlay_toolbar">
+                        <button onclick="pullProperties(); return false;" type="button" class="btn btn-dark">Pull Properties</button>
+                    </td>                                        
                 </tr>
             </table>                        
             <div id="manage"></div>
@@ -251,6 +256,20 @@ width: expand
                     document.getElementById("apis_json_overlay").value  = JSON.stringify(apis_json_overlay);                  
 
                 }
+
+            function pullProperties(){
+                var apis_json_url = document.getElementById("include").value;
+                var apis_json = JSON.parse(document.getElementById("apis_json").value);
+                var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);                
+                for (let i = 0; i < apis_json.apis.length; i++) {
+                    apis_json_overlay.apis[i].properties = apis_json.apis[i].properties;
+                }
+
+                document.getElementById("apis_json_overlay").value = JSON.stringify(apis_json_overlay);            
+
+                displayInclude(apis_json_overlay,apis_json_url);
+                manageNodeOverlay();
+            }
 
             function rateAPIsJSON() {
 
@@ -437,7 +456,32 @@ width: expand
                          //console.log('Error: ' + err);
                 });
 
-                }                
+                }              
+                
+                function sleep(ms) {
+                    return new Promise(resolve => setTimeout(resolve, ms));
+                    }           
+
+                function rateAllAPIs(){
+
+                    var apis_json_url = document.getElementById("node").value;
+                    var apis_json_overlay = JSON.parse(document.getElementById("apis_json_overlay").value);
+
+                    for (let i = 0; i < apis_json_overlay.apis.length; i++) {
+                        if(apis_json_overlay.apis[i].properties){
+                            for (let j = 0; j < apis_json_overlay.apis[i].properties.length; j++) {
+                                loadOpenAPIProperty(i,j,apis_json_overlay.apis[i].properties[j].url,apis_json_url);
+                                sleep(10000).then(() => { 
+                                    console.log('World!'); 
+                                    rateOpenAPI(i,j,apis_json_overlay.apis[i].properties[j].url,apis_json_url);
+                                    resetOpenAPI(i,j,apis_json_overlay.apis[i].properties[j].url,apis_json_url);                                     
+                                });                                    
+                            }
+                        }                        
+                        
+                    }                    
+
+                }
 
                 function splitPascalCase(word) {
                     const camelCase = word.replace(/([a-z])([A-Z])/g, '$1 $2').split(" ");
@@ -2682,155 +2726,8 @@ width: expand
                                 document.getElementById("manage").innerHTML = html;
                                 var apis_json = jsyaml.load(yaml);
 
-                                //var start = document.getElementById("include-start-count").value;
-                                //var end = document.getElementById("include-end-count").value;
+                                displayInclude(apis_json,apis_json_url);
 
-                                //console.log(apis_json);
-
-                                document.getElementById("details").innerHTML = '';
-                                html = '';
-
-                                html += '<div class="form-group">';
-                                html += '<label for="name"><strong>AID</strong></label>';
-                                html += '<input type="text" class="form-control" id="aid" aria-describedby="aid" onchange="saveIncludeAPIsJSONAID();" value="' + apis_json.aid + '">';
-                                html += '</div>';
-
-                                html += '<div class="form-group">';
-                                html += '<label for="name"><strong>Score</strong></label>';
-                                html += '<input type="text" class="form-control" id="score" aria-describedby="score" onchange="saveIncludeAPIsJSONScore();" value="' + apis_json.score + '">';
-                                html += '</div>';                                    
-
-                                html += '<div class="form-group">';
-                                html += '<label for="name-"><strong>Name</strong></label>';
-                                html += '<input type="text" class="form-control" id="name" aria-describedby="name" value="' + apis_json.name + '" onchange="saveIncludeAPIsJSONName();">';
-                                html += '</div>';
-                                html += '<div class="form-group">';
-                                html += '<label for="description"><strong>Description</strong></label>';
-                                html += '<input type="hidden" id="description2"><textarea rows="10" style="width: 100%: height: 400px;" class="form-control" id="description" onchange="saveIncludeAPIsJSONDescription();" aria-describedby="description">' + apis_json.description + '</textarea>';
-                                html += '</div>';
-                                html += '<div class="form-group">';
-                                html += '<label for="tags"><strong>Tags</label>';                                    
-                                html += '<textarea class="form-control" id="tags" aria-describedby="tags" style="width: 100%: height: 100px;" onchange="saveIncludeAPIsJSONTags();">' + apis_json.tags + '</textarea>';                                  
-                                html += '</div>';  
-                                
-                                document.getElementById("details").innerHTML = html;
-
-                                for (let i = 0; i < apis_json.apis.length; i++) {
-                                    
-                                    //if(i >= start && i <= end){
-                                
-                                    var api_name = apis_json.apis[i].name;
-                                    var api_aid = apis_json.apis[i].aid;
-                                    var api_score = apis_json.apis[i].score;
-                                    var api_description = apis_json.apis[i].description;
-                                    if (api_description) {
-                                        api_description = api_description.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "");
-                                    }
-                                    else {
-                                        api_description = "No Description";
-                                    }
-
-                                    var api_human_url = apis_json.apis[i].humanURL;
-                                    var api_base_url = apis_json.apis[i].baseURL;
-
-                                    var api_tags = apis_json.apis[i].tags;
-                                        
-                                    html = document.getElementById("manage").innerHTML;
-
-                                    html += '<div class="form-group">';
-                                    html += '<label for="aid-' + i + '"><strong>AID</strong></label>';
-                                    html += '<input type="text" class="form-control" id="aid-' + i + '" aria-describedby="aid-' + i + '" onchange="saveAPIsJSONAID(' + i + ');" value="' + api_aid + '">';
-                                    html += '</div>';
-
-                                    html += '<div class="form-group">';
-                                    html += '<label for="score-' + i + '"><strong>Score</strong></label>';
-                                    html += '<input type="text" class="form-control" id="score-' + i + '" aria-describedby="score-' + i + '" onchange="saveAPIsJSONScore(' + i + ');" value="' + api_score + '">';
-                                    html += '</div>';                                    
-
-                                    html += '<div class="form-group">';
-                                    html += '<label for="name-' + i + '"><strong>Name</strong></label>';
-                                    html += '<input type="text" class="form-control" id="name-' + i + '" onchange="saveAPIsJSONName(' + i + ');" aria-describedby="name-' + i + '" value="' + api_name + '">';
-                                    html += '</div>';
-                                    html += '<div class="form-group">';
-                                    html += '<label for="description-' + i + '"><strong>Description</strong> (<a href="#" onclick="stripAPIsJSONDescription(' + i + '); return false;">Strip HTML</a>) (<a href="#" onclick="writeAPIsJSONDescription(' + i + '); return false;">Write</a>)</label>';
-                                    html += '<input type="hidden" id="description2-' + i + '"><textarea rows="10" style="width: 100%: height: 400px;" class="form-control" onchange="saveAPIsJSONDescription(' + i + ');" id="description-' + i + '" aria-describedby="description-' + i + '">' + api_description + '</textarea>';
-                                    html += '</div>';
-                                    html += '<div class="form-group">';
-                                    html += '<label for="tags-' + i + '"><strong>Tags HERE2</label>';                                    
-                                    html += '<textarea class="form-control" onchange="saveAPIsJSONTags(' + i + ');" id="tags-' + i + '" aria-describedby="description-' + i + '" style="width: 100%: height: 100px;">' + api_tags + '</textarea>';
-                                    html += '<a href="#" onclick="dedupeAPIsJSONAPITags(' + i + '); return false;">DeDupe</a><br>';
-                                    html += '<a href="#" onclick="compareAPIsJSONAPITagsWithVocabulary(' + i + '); return false;">Vocabulary</a>';                                    
-                                    html += '</div>';
-
-                                    html += '<div class="form-group">';
-                                    html += '<label for="name-' + i + '"><strong>Human URL</strong></label>';
-                                    html += '<input type="text" class="form-control" id="humanURL-' + i + '" onchange="saveAPIsJSONHumanURL(' + i + ');" value="' + api_human_url + '">';
-                                    html += '</div>';
-
-                                    html += '<div class="form-group">';
-                                    html += '<label for="name-' + i + '"><strong>Base URL</strong></label>';
-                                    html += '<input type="text" class="form-control" id="baseURL-' + i + '" onchange="saveAPIsJSONBaseURL(' + i + ');" value="' + api_base_url + '">';
-                                    html += '</div>';                                    
-                                    html += '<div class="form-group">';
-                                    html += '<br><table width="100%">';
-                                    html += '<tr>';
-                                    html += '<td width="40%"><h4>Properties</h4></td>';    
-                                    html += '<td width="40%"><input type="text" class="form-control" id="search-' + i + '" value="" style="width: 100%;"></td>'; 
-                                    html += '<td width="20%"><button onclick="searchBingforAPIProperties(' + i + '); return false;" type="button" class="btn btn-dark">Search</button><a href="#" onclick="viewOnGoogle(' + i + '); return false;" target="_blank">Google</td>'; 
-                                    html += '</tr>';
-                                    html += '</table>';
-
-                                    html += '<table width="100%" id="property-listing-' + i + '">';
-
-                                    if(apis_json.apis[i].properties){
-                                        for (let j = 0; j < apis_json.apis[i].properties.length; j++) {
-
-                                            html += '<tr>';
-                                            html += '<td width="20%"><input type="text" class="form-control" id="property-type-' + i + '-' + j + '" onchange="saveAPIsJSONPropertyType(' + i + ',' + j + ');" value="' + apis_json.apis[i].properties[j].type + '" style="width: 100%;"></td>';
-                                            html += '<td width="30%"><input type="text" class="form-control" id="property-url-' + i + '-' + j + '" onchange="saveAPIsJSONPropertyUrl(' + i + ',' + j + ');" value="' + apis_json.apis[i].properties[j].url + '" style="width: 100%;"></td>';
-
-                                            if (apis_json.apis[i].properties[j].type == 'OpenAPI') {
-                                                html += '<td><a href="' + apis_json.apis[i].properties[j].url + '" target="_blank">View</a></td>';
-                                                html += '<td width="10%" align="center"><a href="#" onclick="loadOpenAPI(' + i + ',' + j + ',' + "'" + apis_json.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Load</a></td>';
-                                                html += '<td width="10%" align="center"><a href="#" onclick="pullTagsFromOpenAPI(' + i + ',' + j + ',' + "'" + apis_json.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Tags</a></td>';
-                                                html += '<td width="10%" align="center"><a href="#" onclick="saveOpenAPI(' + i + ',' + j + ',' + "'" + apis_json.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Save</a></td>';
-                                                html += '<td width="10%" align="center"><a href="#" onclick="resetOpenAPI(' + i + ',' + j + ',' + "'" + apis_json.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Reset</a></td>';
-                                            }
-                                            else {
-                                                html += '<td></td>';
-                                                html += '<td width="10%" align="center><a href="' + apis_json.apis[i].properties[j].url + '" target="_blank">View</a></td>';
-                                                html += '<td width="10%" align="center"><a href="#" onclick="harvestUrl(' + i + ',' + "'" + apis_json_url + "'" + '); return false;">Harvest</a></td>';
-                                            }
-
-                                            html += '</tr>';
-                                            html += '<tr><td colspan="5" id="paths-' + i + '-' + j + '"></td></tr>';
-
-                                        }
-                                    }
-                                    html += '</table>';
-
-                                    html += '<table width="100%" id="property-add-' + i + '">';
-                                    html += '<tr>';
-                                    html += '<td width="30%"><strong>Type</strong></td>';
-                                    html += '<td><strong>URL</strong></td>';
-                                    html += '<td width="20%"></td>';                                    
-                                    html += '</tr>';
-                                    html += '<tr>';
-                                    html += '<td width="30%"><input type="text" class="form-control" id="property-type-' + i + '" value="" style="width: 100%;"></td>';
-                                    html += '<td><input type="text" class="form-control" id="property-url-' + i + '" value="" style="width: 100%;"></td>';
-                                    html += '<td width="20%"><button onclick="addAPIProperty(' + i + '); return false;" type="button" class="btn btn-dark">Add Property</button></td>';                                    
-                                    html += '</tr>';                            
-
-                                    html += '</table>';
-                                    html += '</div>';
-                                    html += '<div id="manage-' + i + '"></div>';
-                                    html += '<br><hr><br>';
-                                    
-                                    document.getElementById("manage").innerHTML = html;
-
-                                    //}
-
-                                }
                                 //console.log(apis_json); 
                                 document.getElementById("apis_json").value = JSON.stringify(apis_json);
 
@@ -2846,7 +2743,157 @@ width: expand
                         });
 
                     //document.getElementById("alert").innerHTML = "";
-                }                
+                }           
+                
+                function displayInclude(apis_json,apis_json_url){
+
+                    console.log("GO");
+
+                    document.getElementById("details").innerHTML = '';
+                    html = '';
+
+                    html += '<div class="form-group">';
+                    html += '<label for="name"><strong>AID</strong></label>';
+                    html += '<input type="text" class="form-control" id="aid" aria-describedby="aid" onchange="saveIncludeAPIsJSONAID();" value="' + apis_json.aid + '">';
+                    html += '</div>';
+
+                    html += '<div class="form-group">';
+                    html += '<label for="name"><strong>Score</strong></label>';
+                    html += '<input type="text" class="form-control" id="score" aria-describedby="score" onchange="saveIncludeAPIsJSONScore();" value="' + apis_json.score + '">';
+                    html += '</div>';                                    
+
+                    html += '<div class="form-group">';
+                    html += '<label for="name-"><strong>Name</strong></label>';
+                    html += '<input type="text" class="form-control" id="name" aria-describedby="name" value="' + apis_json.name + '" onchange="saveIncludeAPIsJSONName();">';
+                    html += '</div>';
+                    html += '<div class="form-group">';
+                    html += '<label for="description"><strong>Description</strong></label>';
+                    html += '<input type="hidden" id="description2"><textarea rows="10" style="width: 100%: height: 400px;" class="form-control" id="description" onchange="saveIncludeAPIsJSONDescription();" aria-describedby="description">' + apis_json.description + '</textarea>';
+                    html += '</div>';
+                    html += '<div class="form-group">';
+                    html += '<label for="tags"><strong>Tags</label>';                                    
+                    html += '<textarea class="form-control" id="tags" aria-describedby="tags" style="width: 100%: height: 100px;" onchange="saveIncludeAPIsJSONTags();">' + apis_json.tags + '</textarea>';                                  
+                    html += '</div>';  
+                    
+                    document.getElementById("details").innerHTML = html;
+
+                    for (let i = 0; i < apis_json.apis.length; i++) {
+                        
+                        //if(i >= start && i <= end){
+                    
+                        var api_name = apis_json.apis[i].name;
+                        var api_aid = apis_json.apis[i].aid;
+                        var api_score = apis_json.apis[i].score;
+                        var api_description = apis_json.apis[i].description;
+                        if (api_description) {
+                            api_description = api_description.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "");
+                        }
+                        else {
+                            api_description = "No Description";
+                        }
+
+                        var api_human_url = apis_json.apis[i].humanURL;
+                        var api_base_url = apis_json.apis[i].baseURL;
+
+                        var api_tags = apis_json.apis[i].tags;
+                            
+                        html = document.getElementById("manage").innerHTML;
+
+                        html += '<div class="form-group">';
+                        html += '<label for="aid-' + i + '"><strong>AID</strong></label>';
+                        html += '<input type="text" class="form-control" id="aid-' + i + '" aria-describedby="aid-' + i + '" onchange="saveAPIsJSONAID(' + i + ');" value="' + api_aid + '">';
+                        html += '</div>';
+
+                        html += '<div class="form-group">';
+                        html += '<label for="score-' + i + '"><strong>Score</strong></label>';
+                        html += '<input type="text" class="form-control" id="score-' + i + '" aria-describedby="score-' + i + '" onchange="saveAPIsJSONScore(' + i + ');" value="' + api_score + '">';
+                        html += '</div>';                                    
+
+                        html += '<div class="form-group">';
+                        html += '<label for="name-' + i + '"><strong>Name</strong></label>';
+                        html += '<input type="text" class="form-control" id="name-' + i + '" onchange="saveAPIsJSONName(' + i + ');" aria-describedby="name-' + i + '" value="' + api_name + '">';
+                        html += '</div>';
+                        html += '<div class="form-group">';
+                        html += '<label for="description-' + i + '"><strong>Description</strong> (<a href="#" onclick="stripAPIsJSONDescription(' + i + '); return false;">Strip HTML</a>) (<a href="#" onclick="writeAPIsJSONDescription(' + i + '); return false;">Write</a>)</label>';
+                        html += '<input type="hidden" id="description2-' + i + '"><textarea rows="10" style="width: 100%: height: 400px;" class="form-control" onchange="saveAPIsJSONDescription(' + i + ');" id="description-' + i + '" aria-describedby="description-' + i + '">' + api_description + '</textarea>';
+                        html += '</div>';
+                        html += '<div class="form-group">';
+                        html += '<label for="tags-' + i + '"><strong>Tags</label>';                                    
+                        html += '<textarea class="form-control" onchange="saveAPIsJSONTags(' + i + ');" id="tags-' + i + '" aria-describedby="description-' + i + '" style="width: 100%: height: 100px;">' + api_tags + '</textarea>';
+                        html += '<a href="#" onclick="dedupeAPIsJSONAPITags(' + i + '); return false;">DeDupe</a><br>';
+                        html += '<a href="#" onclick="compareAPIsJSONAPITagsWithVocabulary(' + i + '); return false;">Vocabulary</a>';                                    
+                        html += '</div>';
+
+                        html += '<div class="form-group">';
+                        html += '<label for="name-' + i + '"><strong>Human URL</strong></label>';
+                        html += '<input type="text" class="form-control" id="humanURL-' + i + '" onchange="saveAPIsJSONHumanURL(' + i + ');" value="' + api_human_url + '">';
+                        html += '</div>';
+
+                        html += '<div class="form-group">';
+                        html += '<label for="name-' + i + '"><strong>Base URL</strong></label>';
+                        html += '<input type="text" class="form-control" id="baseURL-' + i + '" onchange="saveAPIsJSONBaseURL(' + i + ');" value="' + api_base_url + '">';
+                        html += '</div>';                                    
+                        html += '<div class="form-group">';
+                        html += '<br><table width="100%">';
+                        html += '<tr>';
+                        html += '<td width="40%"><h4>Properties</h4></td>';    
+                        html += '<td width="40%"><input type="text" class="form-control" id="search-' + i + '" value="" style="width: 100%;"></td>'; 
+                        html += '<td width="20%"><button onclick="searchBingforAPIProperties(' + i + '); return false;" type="button" class="btn btn-dark">Search</button><a href="#" onclick="viewOnGoogle(' + i + '); return false;" target="_blank">Google</td>'; 
+                        html += '</tr>';
+                        html += '</table>';
+
+                        html += '<table width="100%" id="property-listing-' + i + '">';
+
+                        if(apis_json.apis[i].properties){
+                            for (let j = 0; j < apis_json.apis[i].properties.length; j++) {
+
+                                html += '<tr>';
+                                html += '<td width="20%"><input type="text" class="form-control" id="property-type-' + i + '-' + j + '" onchange="saveAPIsJSONPropertyType(' + i + ',' + j + ');" value="' + apis_json.apis[i].properties[j].type + '" style="width: 100%;"></td>';
+                                html += '<td width="30%"><input type="text" class="form-control" id="property-url-' + i + '-' + j + '" onchange="saveAPIsJSONPropertyUrl(' + i + ',' + j + ');" value="' + apis_json.apis[i].properties[j].url + '" style="width: 100%;"></td>';
+
+                                if (apis_json.apis[i].properties[j].type == 'OpenAPI') {
+                                    html += '<td><a href="' + apis_json.apis[i].properties[j].url + '" target="_blank">View</a></td>';
+                                    html += '<td width="10%" align="center"><a href="#" onclick="loadOpenAPI(' + i + ',' + j + ',' + "'" + apis_json.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Load</a></td>';
+                                    html += '<td width="10%" align="center"><a href="#" onclick="pullTagsFromOpenAPI(' + i + ',' + j + ',' + "'" + apis_json.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Tags</a></td>';
+                                    html += '<td width="10%" align="center"><a href="#" onclick="saveOpenAPI(' + i + ',' + j + ',' + "'" + apis_json.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Save</a></td>';
+                                    html += '<td width="10%" align="center"><a href="#" onclick="resetOpenAPI(' + i + ',' + j + ',' + "'" + apis_json.apis[i].properties[j].url + "'" + ',' + "'" + apis_json_url + "'" + '); return false;">Reset</a></td>';
+                                }
+                                else {
+                                    html += '<td></td>';
+                                    html += '<td width="10%" align="center><a href="' + apis_json.apis[i].properties[j].url + '" target="_blank">View</a></td>';
+                                    html += '<td width="10%" align="center"><a href="#" onclick="harvestUrl(' + i + ',' + "'" + apis_json_url + "'" + '); return false;">Harvest</a></td>';
+                                }
+
+                                html += '</tr>';
+                                html += '<tr><td colspan="5" id="paths-' + i + '-' + j + '"></td></tr>';
+
+                            }
+                        }
+                        html += '</table>';
+
+                        html += '<table width="100%" id="property-add-' + i + '">';
+                        html += '<tr>';
+                        html += '<td width="30%"><strong>Type</strong></td>';
+                        html += '<td><strong>URL</strong></td>';
+                        html += '<td width="20%"></td>';                                    
+                        html += '</tr>';
+                        html += '<tr>';
+                        html += '<td width="30%"><input type="text" class="form-control" id="property-type-' + i + '" value="" style="width: 100%;"></td>';
+                        html += '<td><input type="text" class="form-control" id="property-url-' + i + '" value="" style="width: 100%;"></td>';
+                        html += '<td width="20%"><button onclick="addAPIProperty(' + i + '); return false;" type="button" class="btn btn-dark">Add Property</button></td>';                                    
+                        html += '</tr>';                            
+
+                        html += '</table>';
+                        html += '</div>';
+                        html += '<div id="manage-' + i + '"></div>';
+                        html += '<br><hr><br>';
+                        
+                        document.getElementById("manage").innerHTML = html;
+
+                        //}
+
+                    }                    
+                }
             </script>
         </div>
         <div class="col-2"></div>
